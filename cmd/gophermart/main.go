@@ -9,14 +9,19 @@ import (
 	"time"
 
 	"github.com/LekcRg/gophermart/internal/config"
+	"github.com/LekcRg/gophermart/internal/handlers"
 	"github.com/LekcRg/gophermart/internal/logger"
+	"github.com/LekcRg/gophermart/internal/repository"
+	"github.com/LekcRg/gophermart/internal/repository/postgres"
 	"github.com/LekcRg/gophermart/internal/router"
-	"github.com/LekcRg/gophermart/internal/storage"
-	"github.com/LekcRg/gophermart/internal/storage/postgres"
+	"github.com/LekcRg/gophermart/internal/service"
 	"go.uber.org/zap"
 )
 
-func exit(cancel context.CancelFunc, server *http.Server, db storage.Storage) {
+func exit(
+	cancel context.CancelFunc, server *http.Server,
+	db repository.RepositoryProvider,
+) {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	<-sigChan
@@ -38,17 +43,18 @@ func exit(cancel context.CancelFunc, server *http.Server, db storage.Storage) {
 func main() {
 	cfg := config.Get()
 	logger.Initialize(cfg)
-	routes := router.New()
-	logger.Log.Info("Hello, world!")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	dbProvider := postgres.New(ctx, cfg)
+	repos := dbProvider.GetRepositories()
+	services := service.New(repos)
+	handlers := handlers.New(services)
+	routes := router.New(handlers)
 	server := &http.Server{
 		Addr:    cfg.Address,
 		Handler: routes,
 	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	db := postgres.New(ctx, cfg)
-
-	go exit(cancel, server, db)
+	go exit(cancel, server, dbProvider)
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		logger.Log.Error(err.Error())
 	}

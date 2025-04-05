@@ -4,6 +4,7 @@ go 1.23.7
 
 require (
 	github.com/go-chi/chi/v5 v5.2.1
+	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438
 	github.com/jackc/pgx/v5 v5.7.4
 	github.com/knadh/koanf/parsers/dotenv v1.0.0
 	github.com/knadh/koanf/providers/env v1.0.0
@@ -13,6 +14,7 @@ require (
 	github.com/knadh/koanf/v2 v2.1.2
 	github.com/spf13/pflag v1.0.6
 	go.uber.org/zap v1.27.0
+	golang.org/x/crypto v0.31.0
 )
 
 require (
@@ -28,7 +30,6 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/stretchr/testify v1.10.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
-	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.21.0 // indirect

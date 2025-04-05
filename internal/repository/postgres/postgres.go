@@ -5,12 +5,15 @@ import (
 
 	"github.com/LekcRg/gophermart/internal/config"
 	"github.com/LekcRg/gophermart/internal/logger"
+	"github.com/LekcRg/gophermart/internal/repository"
+	"github.com/LekcRg/gophermart/internal/repository/postgres/user"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
 
 type Postgres struct {
-	db *pgxpool.Pool
+	db    *pgxpool.Pool
+	repos *repository.Repository
 }
 
 func New(ctx context.Context, cfg config.Config) *Postgres {
@@ -20,17 +23,16 @@ func New(ctx context.Context, cfg config.Config) *Postgres {
 			zap.Error(err))
 	}
 
-	req := `CREATE TABLE IF NOT EXISTS users (
-		id SERIAL PRIMARY KEY,
-		LOGIN VARCHAR(20) UNIQUE NOT NULL,
-		salt VARCHAR(10) NOT NULL,
-		passhash varchar(32) NOT NULL
-	)`
-	conn.Exec(ctx, req)
-
 	return &Postgres{
 		db: conn,
+		repos: &repository.Repository{
+			User: user.New(ctx, conn),
+		},
 	}
+}
+
+func (p *Postgres) GetRepositories() *repository.Repository {
+	return p.repos
 }
 
 func (p *Postgres) Close() {
