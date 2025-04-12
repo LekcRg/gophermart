@@ -25,6 +25,7 @@ type Config struct {
 	DBURI          string `koanf:"DATABASE_URI"`
 	Address        string `koanf:"RUN_ADDRESS"`
 	AccrualAddress string `koanf:"ACCRUAL_SYSTEM_ADDRESS"`
+	JWTSecret      string `koanf:"JWT_SECRET_KEY"`
 }
 
 var k = koanf.New(".")
@@ -40,6 +41,7 @@ func getFlags() {
 	fl.StringP("RUN_ADDRESS", "a", "", "Address to run gophermart")
 	fl.StringP("DATABASE_URI", "d", "", "Database URI")
 	fl.StringP("ACCRUAL_SYSTEM_ADDRESS", "r", "", "Accrual system address")
+	fl.StringP("JWT_SECRET_KEY", "j", "", "JWT secret key")
 
 	fl.Parse(os.Args[1:])
 	if err := k.Load(posflag.Provider(fl, ".", k), nil); err != nil {

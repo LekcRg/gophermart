@@ -25,6 +25,13 @@ func Initialize(cfg config.Config) {
 	}
 	Log = zl
 
-	cfgString := fmt.Sprintf("%+v", cfg)
+	loggableCfg := cfg
+	if loggableCfg.JWTSecret != "" {
+		loggableCfg.JWTSecret = "[SECRET]"
+	}
+	if loggableCfg.DBPass != "" {
+		loggableCfg.DBPass = "[SECRET]"
+	}
+	cfgString := fmt.Sprintf("%+v", loggableCfg)
 	Log.Info(cfgString)
 }

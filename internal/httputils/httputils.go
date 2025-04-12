@@ -6,7 +6,11 @@ import (
 )
 
 type MessageJSON struct {
-	Message string
+	Message string `json:"message"`
+}
+
+type ErrorJSON struct {
+	Error string `json:"error"`
 }
 
 func IsJSON(r *http.Request) bool {
@@ -17,23 +21,25 @@ func ErrInternal(w http.ResponseWriter) {
 	http.Error(w, "Internal server error", http.StatusInternalServerError)
 }
 
-func getJSON(text string) ([]byte, error) {
-	msg := MessageJSON{
-		Message: text,
-	}
-	msgJSON, err := json.Marshal(msg)
+func ErrMapJSON(w http.ResponseWriter, errMap map[string]string, code int) {
+	w.Header().Set("Content-Type", "application/json")
+	msg, err := json.Marshal(errMap)
 	if err != nil {
-		return nil, err
+		ErrInternalJSON(w)
 	}
 
-	return msgJSON, nil
+	w.WriteHeader(code)
+	w.Write(msg)
 }
 
-func ErrJSON(w http.ResponseWriter, error string, code int) {
+func ErrJSON(w http.ResponseWriter, errMsg string, code int) {
 	w.Header().Set("Content-Type", "application/json")
-	msg, err := getJSON(error)
+	errStruct := ErrorJSON{
+		Error: errMsg,
+	}
+	msg, err := json.Marshal(errStruct)
 	if err != nil {
-		ErrInternal(w)
+		ErrInternalJSON(w)
 	}
 	w.WriteHeader(code)
 	w.Write(msg)
@@ -45,9 +51,12 @@ func ErrInternalJSON(w http.ResponseWriter) {
 
 func SuccessJSON(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
-	msg, err := getJSON("Success")
+	msgStruct := MessageJSON{
+		Message: "success",
+	}
+	msg, err := json.Marshal(msgStruct)
 	if err != nil {
-		ErrInternal(w)
+		ErrInternalJSON(w)
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(msg)

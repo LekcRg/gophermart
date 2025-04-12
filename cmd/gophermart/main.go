@@ -15,6 +15,7 @@ import (
 	"github.com/LekcRg/gophermart/internal/repository/postgres"
 	"github.com/LekcRg/gophermart/internal/router"
 	"github.com/LekcRg/gophermart/internal/service"
+	"github.com/LekcRg/gophermart/internal/validator"
 	"go.uber.org/zap"
 )
 
@@ -46,9 +47,10 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	dbProvider := postgres.New(ctx, cfg)
+	valid := validator.New()
 	repos := dbProvider.GetRepositories()
-	services := service.New(repos)
-	handlers := handlers.New(services)
+	services := service.New(repos, valid, cfg)
+	handlers := handlers.New(services, valid)
 	routes := router.New(handlers)
 	server := &http.Server{
 		Addr:    cfg.Address,
