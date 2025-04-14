@@ -98,7 +98,7 @@ func (v *Validator) GetValidTranslateErrs(
 	}
 	trans, ok := v.trans[lang]
 	if !ok {
-		logger.Log.Warn("not found translation",
+		logger.Log.Info("not found translation",
 			zap.String("lang", lang))
 		lang = "en"
 		trans = v.trans[lang]

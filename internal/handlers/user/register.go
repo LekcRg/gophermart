@@ -88,6 +88,8 @@ func (uh *UserHandler) Register(
 		httputils.ErrInternalJSON(w)
 		return
 	}
+	w.Header().Set("Authorization", "Bearer "+token)
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(msg)
 }

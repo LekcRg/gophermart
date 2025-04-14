@@ -21,7 +21,7 @@ type LoginRequest struct {
 
 type RegisterRequest struct {
 	Login    string `json:"login" validate:"required"`
-	Password string `json:"password" validate:"required,password,min=8,max=25"`
+	Password string `json:"password" validate:"required,password,min=8,max=40"`
 }
 
 type AuthResponse struct {

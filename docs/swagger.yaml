@@ -30,7 +30,7 @@ definitions:
       login:
         type: string
       password:
-        maxLength: 25
+        maxLength: 40
         minLength: 8
         type: string
     required:
