@@ -3,11 +3,14 @@ package middleware
 import (
 	"compress/gzip"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/LekcRg/gophermart/internal/httputils"
 	"github.com/LekcRg/gophermart/internal/logger"
+	"github.com/LekcRg/gophermart/internal/models"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/zap"
 )
 
@@ -56,3 +59,40 @@ func AllowJSONOnly(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func Auth(secret string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			token := r.Header.Get("Authorization")
+			token = strings.Replace(token, "Bearer", "", 1)
+			token = strings.TrimSpace(token)
+
+			if token == "" {
+				logger.Log.Info("[auth middleware]: token is empty")
+				httputils.ErrJSON(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+
+			var test models.JWTClaim
+			parsedToken, err := jwt.ParseWithClaims(token, &test, func(token *jwt.Token) (any, error) {
+				return []byte(secret), nil
+			})
+			if err != nil || !parsedToken.Valid {
+				logger.Log.Error("error parse jwt token",
+					zap.Error(err))
+				httputils.ErrJSON(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+			logger.Log.Info("success auth",
+				zap.String("login", test.Login),
+				zap.String("id", test.Id),
+			)
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+// eyJleHAiOjE3NDQ2NDIwMzgsIkxvZ2luIjoidXNlcjYifQ.
+// OA5PHfPt5j5GLi7UrLz6weU7nVXsEoYxnWlitq8bKx0

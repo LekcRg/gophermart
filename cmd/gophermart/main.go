@@ -50,8 +50,9 @@ func main() {
 	valid := validator.New()
 	repos := dbProvider.GetRepositories()
 	services := service.New(repos, valid, cfg)
-	handlers := handlers.New(services, valid)
-	routes := router.New(handlers)
+	handlers := handlers.New(cfg, services, valid)
+	routes := router.New(handlers, cfg.JWTSecret)
+
 	server := &http.Server{
 		Addr:    cfg.Address,
 		Handler: routes,
