@@ -51,7 +51,7 @@ func GzipBody(next http.Handler) http.Handler {
 
 func AllowJSONOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Content-Type") != "application/json" {
+		if r.Method == "POST" && r.Header.Get("Content-Type") != "application/json" {
 			httputils.ErrJSON(w, "Incorrect Content-type", http.StatusBadRequest)
 			return
 		}
@@ -92,7 +92,3 @@ func Auth(secret string) func(http.Handler) http.Handler {
 		})
 	}
 }
-
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
-// eyJleHAiOjE3NDQ2NDIwMzgsIkxvZ2luIjoidXNlcjYifQ.
-// OA5PHfPt5j5GLi7UrLz6weU7nVXsEoYxnWlitq8bKx0

@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	_ "github.com/LekcRg/gophermart/docs"
 	"github.com/LekcRg/gophermart/internal/config"
 	"github.com/LekcRg/gophermart/internal/handlers"
 	"github.com/LekcRg/gophermart/internal/logger"
@@ -18,6 +19,17 @@ import (
 	"github.com/LekcRg/gophermart/internal/validator"
 	"go.uber.org/zap"
 )
+
+//	@title				Gophermart API
+//	@version			1.0
+//	@description	Gophermart cumulative loyalty system
+
+//	@host					localhost:8080
+//	@BasePath			/
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 
 func exit(
 	cancel context.CancelFunc, server *http.Server,

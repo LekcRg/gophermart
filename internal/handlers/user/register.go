@@ -32,7 +32,7 @@ func (uh *UserHandler) checkRegisterErrors(
 		return
 	} else if validErrs := uh.validator.GetValidTranslateErrs(err, lang); len(validErrs) > 0 {
 		logger.Log.Info(logContext+"Bad validating register user",
-			// maybe do pretty zal loggin validErrs
+			// maybe do pretty zal login validErrs
 			zap.String("validation errors", fmt.Sprintf("%+v", validErrs)),
 		)
 		httputils.ErrMapJSON(w, validErrs, http.StatusBadRequest)
@@ -44,6 +44,18 @@ func (uh *UserHandler) checkRegisterErrors(
 	httputils.ErrInternalJSON(w)
 }
 
+// Register godoc
+// @Summary      Регистрация пользователя
+// @Description  Регистрирует нового пользователя и возвращает JWT токен при успешной регистрации
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        request body models.RegisterRequest true "Данные для регистрации"
+// @Success      200 {object} models.AuthResponse
+// @Failure      400 {object} httputils.ErrorJSON "Неверные данные"
+// @Failure      409 {object} httputils.ErrorJSON "Пользователь с таким логином уже существует"
+// @Failure      500 {object} httputils.ErrorJSON "Внутренняя ошибка сервера"
+// @Router       /api/user/register [post]
 func (uh *UserHandler) Register(
 	w http.ResponseWriter, r *http.Request,
 ) {

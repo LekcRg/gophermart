@@ -37,8 +37,18 @@ func (uh *UserHandler) checkLoginErrors(w http.ResponseWriter, err error, lang s
 	httputils.ErrInternalJSON(w)
 }
 
-// JWT
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDQ0OTQ1OTgsIkxvZ2luIjoiJDJhJDEwJEFoNjZPL2RVZlJjQ0Zlc3pUNEN2ak9idmlMUGg2Lm5Gay5nQktQaDEuWE5GWkVidzRRRTZ1In0.46JyoQssLaqb1nnJYSLrTXQTwtXLX82SxWfzNZB4d-0
+// Login godoc
+// @Summary      Авторизация пользователя
+// @Description  Авторизация по email и паролю, возвращает JWT токен при успешной аутентификации
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        request body models.LoginRequest true "Данные для входа"
+// @Success      200 {object} models.AuthResponse
+// @Failure      400 {object} httputils.ErrorJSON "Неверные данные"
+// @Failure      401 {object} httputils.ErrorJSON "Неверный email или пароль"
+// @Failure      500 {object} httputils.ErrorJSON "Внутренняя ошибка сервера"
+// @Router       /api/user/login [post]
 func (uh *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	logContext := fmt.Sprintf("[%s/Login] ", logContext)
 	var loginUser models.LoginRequest
@@ -61,7 +71,7 @@ func (uh *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	resJson, err := json.Marshal(res)
 	if err != nil {
-		logger.Log.Error(logContext+"error while masrhal json response",
+		logger.Log.Error(logContext+"error while marshal json response",
 			zap.Error(err))
 		httputils.ErrInternalJSON(w)
 		return
