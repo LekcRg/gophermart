@@ -2,12 +2,16 @@ package user
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 
 	"github.com/LekcRg/gophermart/internal/config"
+	"github.com/LekcRg/gophermart/internal/crypto"
 	"github.com/LekcRg/gophermart/internal/httputils"
+	"github.com/LekcRg/gophermart/internal/logger"
 	"github.com/LekcRg/gophermart/internal/models"
 	"github.com/LekcRg/gophermart/internal/validator"
+	"go.uber.org/zap"
 )
 
 type UserService interface {
@@ -32,16 +36,31 @@ func New(cfg config.Config, us UserService, validator *validator.Validator) *Use
 }
 
 // IsAuth godoc
-// @Summary      Проверка авторизации
-// @Description  Проверяет авторизацию пользователя
+// @Summary      Информация о пользователе
+// @Description  Информация о пользователе возвращается id и логин
 // @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Success      200 {object} httputils.MessageJSON
+// @Success      200 {object} models.JWTClaim "User info"
 // @Failure      401 {object} httputils.ErrorJSON "Unauthorized"
 // @Failure      500 {object} httputils.ErrorJSON "Internal server error"
-// @Router       /api/user/is-auth [get]
+// @Router       /api/user/info [get]
 // @Security     BearerAuth
-func (us *UserHandler) IsAuth(w http.ResponseWriter, _ *http.Request) {
-	httputils.SuccessJSON(w)
+func (us *UserHandler) Info(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value(crypto.UserContextKey).(models.JWTClaim)
+	if !ok {
+		logger.Log.Error("error while getting user data from context")
+		httputils.ErrJSON(w, "Unauthorized", http.StatusUnauthorized)
+	}
+
+	res, err := json.Marshal(user)
+	if err != nil {
+		logger.Log.Error("error marsha JSON",
+			zap.Error(err))
+		httputils.ErrInternalJSON(w)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(res)
 }

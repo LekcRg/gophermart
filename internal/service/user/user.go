@@ -37,12 +37,12 @@ func (us *UserService) Login(
 	if err != nil {
 		return "", err
 	}
-	err = us.db.Login(ctx, user)
+	dbUser, err := us.db.Login(ctx, user)
 	if err != nil {
 		return "", err
 	}
 
-	return crypto.BuildJWTString(user.Login, us.config.JWTSecret)
+	return crypto.BuildJWTString(dbUser.ID, dbUser.Login, us.config.JWTSecret)
 }
 
 func (us *UserService) Register(
@@ -60,14 +60,14 @@ func (us *UserService) Register(
 	if err != nil {
 		return "", err
 	}
-	dbUser := models.User{
+	reqUser := models.DBUser{
 		PasswordHash: string(bPassHash),
 		Login:        user.Login,
 	}
-	err = us.db.Create(ctx, dbUser)
+	dbUser, err := us.db.Create(ctx, reqUser)
 	if err != nil {
 		return "", err
 	}
 
-	return crypto.BuildJWTString(dbUser.Login, us.config.JWTSecret)
+	return crypto.BuildJWTString(dbUser.ID, dbUser.Login, us.config.JWTSecret)
 }

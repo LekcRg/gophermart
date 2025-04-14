@@ -2,16 +2,16 @@ package models
 
 import "github.com/golang-jwt/jwt/v5"
 
-type User struct {
-	ID           int    `json:"id"`
+type DBUser struct {
+	ID           int    `json:"id,omitempty"`
 	Login        string `json:"login"`
-	PasswordHash string
+	PasswordHash string `json:"-"`
 }
 
 type JWTClaim struct {
-	jwt.RegisteredClaims
-	Login string
-	Id    string
+	jwt.RegisteredClaims `json:"-"`
+	Login                string
+	ID                   int
 }
 
 type LoginRequest struct {

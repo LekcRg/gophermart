@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/LekcRg/gophermart/internal/errs"
@@ -33,35 +32,42 @@ func New(ctx context.Context, db *pgxpool.Pool) *UserPostgres {
 	}
 }
 
-func (up *UserPostgres) Create(ctx context.Context, user models.User) error {
+func (up *UserPostgres) Create(
+	ctx context.Context, user models.DBUser,
+) (*models.DBUser, error) {
 	fmt.Printf("%+v\n", user)
-	query := `INSERT INTO users (login, passhash) VALUES ($1, $2)`
-	_, err := up.db.Exec(ctx, query, user.Login, user.PasswordHash)
+	query := `INSERT INTO users (login, passhash) VALUES ($1, $2)
+	RETURNING id, login`
+	row := up.db.QueryRow(ctx, query, user.Login, user.PasswordHash)
+	var userDB models.DBUser
+	err := row.Scan(&userDB.ID, &userDB.Login)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	return &userDB, nil
 }
 
 func (up *UserPostgres) Login(
 	ctx context.Context, user models.LoginRequest,
-) error {
-	query := `SELECT passhash FROM users WHERE login=$1`
+) (*models.DBUser, error) {
+	query := `SELECT id, login, passhash FROM users WHERE login=$1`
 	row := up.db.QueryRow(ctx, query, user.Login)
-	var passHash sql.NullString
-	err := row.Scan(&passHash)
+	var userDB models.DBUser
+	err := row.Scan(&userDB.ID, &userDB.Login, &userDB.PasswordHash)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if !passHash.Valid {
-		return errs.NotFoundUser
+	if userDB.PasswordHash == "" {
+		return nil, errs.NotFoundUser
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(passHash.String), []byte(user.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(userDB.PasswordHash), []byte(user.Password))
 	if err != nil {
 		// maybe NotFoundUser error
-		return errs.IncorrectPassword
+		return nil, errs.IncorrectPassword
 	}
+	userDB.PasswordHash = ""
 
-	return nil
+	return &userDB, nil
 }

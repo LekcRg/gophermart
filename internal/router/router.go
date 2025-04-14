@@ -31,7 +31,7 @@ func New(handlers *handlers.Handlers, secret string) chi.Router {
 			r.Group(func(r chi.Router) {
 				r.Use(middleware.Auth(secret))
 
-				r.Get("/is-auth", handlers.User.IsAuth)
+				r.Get("/info", handlers.User.Info)
 			})
 		})
 	})

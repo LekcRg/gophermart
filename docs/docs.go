@@ -15,14 +15,14 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/user/is-auth": {
+        "/api/user/info": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Проверяет авторизацию пользователя",
+                "description": "Информация о пользователе возвращается id и логин",
                 "consumes": [
                     "application/json"
                 ],
@@ -32,12 +32,12 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Проверка авторизации",
+                "summary": "Информация о пользователе",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "User info",
                         "schema": {
-                            "$ref": "#/definitions/httputils.MessageJSON"
+                            "$ref": "#/definitions/models.JWTClaim"
                         }
                     },
                     "401": {
@@ -169,18 +169,21 @@ const docTemplate = `{
                 }
             }
         },
-        "httputils.MessageJSON": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
         "models.AuthResponse": {
             "type": "object",
             "properties": {
                 "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.JWTClaim": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "login": {
                     "type": "string"
                 }
             }

@@ -16,6 +16,6 @@ type RepositoryProvider interface {
 }
 
 type UserRepository interface {
-	Create(context.Context, models.User) error
-	Login(context.Context, models.LoginRequest) error
+	Create(context.Context, models.DBUser) (*models.DBUser, error)
+	Login(context.Context, models.LoginRequest) (*models.DBUser, error)
 }

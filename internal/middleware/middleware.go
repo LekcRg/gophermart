@@ -2,15 +2,15 @@ package middleware
 
 import (
 	"compress/gzip"
+	"context"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/LekcRg/gophermart/internal/crypto"
 	"github.com/LekcRg/gophermart/internal/httputils"
 	"github.com/LekcRg/gophermart/internal/logger"
-	"github.com/LekcRg/gophermart/internal/models"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
-	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/zap"
 )
 
@@ -73,22 +73,22 @@ func Auth(secret string) func(http.Handler) http.Handler {
 				return
 			}
 
-			var test models.JWTClaim
-			parsedToken, err := jwt.ParseWithClaims(token, &test, func(token *jwt.Token) (any, error) {
-				return []byte(secret), nil
-			})
-			if err != nil || !parsedToken.Valid {
+			claim, err := crypto.GetUserClaims(token, secret)
+			if err != nil {
 				logger.Log.Error("error parse jwt token",
 					zap.Error(err))
 				httputils.ErrJSON(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
+
 			logger.Log.Info("success auth",
-				zap.String("login", test.Login),
-				zap.String("id", test.Id),
+				zap.String("login", claim.Login),
+				zap.Int("id", claim.ID),
 			)
 
-			next.ServeHTTP(w, r)
+			ctx := context.WithValue(r.Context(), crypto.UserContextKey, claim)
+
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
