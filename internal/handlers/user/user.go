@@ -47,8 +47,8 @@ func New(cfg config.Config, us UserService, validator *validator.Validator) *Use
 // @Router       /api/user/info [get]
 // @Security     BearerAuth
 func (us *UserHandler) Info(w http.ResponseWriter, r *http.Request) {
-	user, ok := r.Context().Value(crypto.UserContextKey).(models.JWTClaim)
-	if !ok {
+	user, err := crypto.GetUserFromCtx(r.Context())
+	if err != nil {
 		logger.Log.Error("error while getting user data from context")
 		httputils.ErrJSON(w, "Unauthorized", http.StatusUnauthorized)
 	}

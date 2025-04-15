@@ -106,6 +106,41 @@ paths:
       summary: Авторизация пользователя
       tags:
       - Auth
+  /api/user/orders:
+    post:
+      consumes:
+      - text/plain
+      description: Доступен только аутентифицированным пользователям. Номером заказа
+        является последовательность цифр произвольной длины.
+      parameters:
+      - description: Номер заказа
+        in: body
+        name: order-num
+        required: true
+        schema:
+          type: integer
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Номер заказа уже был загружен этим пользователем
+        "202":
+          description: Новый номер заказа принят в обработку
+        "400":
+          description: Неверный формат запроса
+        "401":
+          description: Пользователь не аутентифицирован
+        "409":
+          description: Номер заказа уже был загружен другим пользователем
+        "422":
+          description: Неверный формат номера заказа
+        "500":
+          description: Внутренняя ошибка сервера
+      security:
+      - BearerAuth: []
+      summary: Загрузка номера заказа
+      tags:
+      - Orders
   /api/user/register:
     post:
       consumes:

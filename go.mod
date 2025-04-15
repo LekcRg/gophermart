@@ -21,6 +21,7 @@ require (
 	github.com/swaggo/swag v1.16.4
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.33.0
+	resty.dev/v3 v3.0.0-beta.2
 )
 
 require (

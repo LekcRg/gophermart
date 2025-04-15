@@ -54,6 +54,7 @@ func exit(
 }
 
 func main() {
+	// request.Post()
 	cfg := config.Get()
 	logger.Initialize(cfg)
 

@@ -1,6 +1,7 @@
 package crypto
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -41,4 +42,13 @@ func GetUserClaims(token, secret string) (models.JWTClaim, error) {
 	}
 
 	return claim, nil
+}
+
+func GetUserFromCtx(ctx context.Context) (models.JWTClaim, error) {
+	user, ok := ctx.Value(UserContextKey).(models.JWTClaim)
+	if !ok {
+		return models.JWTClaim{}, fmt.Errorf("not found")
+	}
+
+	return user, nil
 }

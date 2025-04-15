@@ -4,6 +4,7 @@ import (
 	"errors"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/LekcRg/gophermart/internal/logger"
@@ -17,20 +18,18 @@ import (
 	"go.uber.org/zap"
 )
 
-type Transalors map[string]ut.Translator
+type ValidationErrors = validator.ValidationErrors
+
+type Translator map[string]ut.Translator
 
 type Validator struct {
 	validate *validator.Validate
-	trans    Transalors
+	trans    Translator
+	ut       *ut.UniversalTranslator
 }
 
 func New() *Validator {
 	validate := validator.New(validator.WithRequiredStructEnabled())
-
-	err := validate.RegisterValidation("password", validPassword)
-	if err != nil {
-		panic(err)
-	}
 
 	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
 		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
@@ -48,30 +47,54 @@ func New() *Validator {
 	if !found {
 		logger.Log.Error("not found en translations")
 	}
-	regTrans(validate, enTrans, "password",
-		"{0} must include uppercase, lowercase letter and digit")
 
 	ruTrans, found := uni.GetTranslator("ru")
 	if !found {
 		logger.Log.Error("not found ru translations")
 	}
-	regTrans(validate, ruTrans, "password",
-		"{0} должен включать заглавную, строчную букву и цифру")
 
 	enTranslation.RegisterDefaultTranslations(validate, enTrans)
 	ruTranslation.RegisterDefaultTranslations(validate, ruTrans)
 
-	return &Validator{
+	valid := &Validator{
 		validate: validate,
-		trans: Transalors{
+		trans: Translator{
 			"en": enTrans,
 			"ru": ruTrans,
 		},
+		ut: uni,
 	}
+
+	err := validate.RegisterValidation("password", validPassword)
+	if err != nil {
+		panic(err)
+	}
+	valid.addTranslates(
+		"password",
+		"{0} must include uppercase, lowercase letter",
+		"{0} должен включать заглавную, строчную букву",
+	)
+
+	err = validate.RegisterValidation("luhn-order", validLuhn)
+	if err != nil {
+		panic(err)
+	}
+	valid.addTranslates(
+		"luhn-order",
+		"incorrect order number",
+		"неправильный номер заказа",
+	)
+
+	return valid
 }
 
-func regTrans(valid *validator.Validate, trans ut.Translator, key, transStr string) {
-	valid.RegisterTranslation(key, trans, func(ut ut.Translator) error {
+func (v *Validator) addTranslates(key, en, ru string) {
+	v.regTranslation(v.trans["en"], key, en)
+	v.regTranslation(v.trans["ru"], key, ru)
+}
+
+func (v *Validator) regTranslation(trans ut.Translator, key, transStr string) {
+	v.validate.RegisterTranslation(key, trans, func(ut ut.Translator) error {
 		return ut.Add(key, transStr, true)
 	}, func(ut ut.Translator, fe validator.FieldError) string {
 		t, _ := ut.T(key, fe.Field())
@@ -83,9 +106,37 @@ func validPassword(fl validator.FieldLevel) bool {
 	value := fl.Field().String()
 	hasUpper := regexp.MustCompile(`[A-Z]`).MatchString(value)
 	hasLower := regexp.MustCompile(`[a-z]`).MatchString(value)
-	hasNumber := regexp.MustCompile(`[0-9]`).MatchString(value)
+	// hasNumber := regexp.MustCompile(`[0-9]`).MatchString(value)
 
-	return hasUpper && hasLower && hasNumber
+	return hasUpper && hasLower
+	// return hasUpper && hasLower && hasNumber
+}
+
+func validLuhn(fl validator.FieldLevel) bool {
+	value := fl.Field().String()
+	sum := 0
+	valueSlice := []rune(value)
+	length := len(value)
+	parity := length % 2
+
+	for i := range length {
+		num, err := strconv.Atoi(string(valueSlice[i]))
+		if err != nil {
+			return false
+		}
+
+		if i%2 == parity {
+			num *= 2
+		}
+
+		if num > 9 {
+			num -= 9
+		}
+
+		sum += num
+	}
+
+	return sum%10 == 0
 }
 
 func (v *Validator) GetValidTranslateErrs(
@@ -123,4 +174,17 @@ func (v *Validator) GetValidTranslateErrs(
 
 func (v *Validator) ValidateStruct(s any) error {
 	return v.validate.Struct(s)
+}
+
+func (v *Validator) ValidateVar(s any, keys string) error {
+	return v.validate.Var(s, keys)
+}
+
+func (v *Validator) GetTrans(lang string) ut.Translator {
+	language, ok := v.trans[lang]
+	if !ok {
+		return v.trans["en"]
+	}
+
+	return language
 }

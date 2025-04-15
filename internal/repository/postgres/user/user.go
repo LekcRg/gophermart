@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/LekcRg/gophermart/internal/errs"
 	"github.com/LekcRg/gophermart/internal/logger"
@@ -19,7 +18,7 @@ type UserPostgres struct {
 func New(ctx context.Context, db *pgxpool.Pool) *UserPostgres {
 	query := `CREATE TABLE IF NOT EXISTS users (
 		id SERIAL PRIMARY KEY,
-		login VARCHAR(20) UNIQUE NOT NULL,
+		login VARCHAR(30) UNIQUE NOT NULL,
 		passhash varchar(72) NOT NULL
 	)`
 	_, err := db.Exec(ctx, query)
@@ -35,7 +34,6 @@ func New(ctx context.Context, db *pgxpool.Pool) *UserPostgres {
 func (up *UserPostgres) Create(
 	ctx context.Context, user models.DBUser,
 ) (*models.DBUser, error) {
-	fmt.Printf("%+v\n", user)
 	query := `INSERT INTO users (login, passhash) VALUES ($1, $2)
 	RETURNING id, login`
 	row := up.db.QueryRow(ctx, query, user.Login, user.PasswordHash)
