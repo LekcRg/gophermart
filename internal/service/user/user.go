@@ -42,7 +42,7 @@ func (us *UserService) Login(
 		return "", err
 	}
 
-	return crypto.BuildJWTString(dbUser.ID, dbUser.Login, us.config.JWTSecret)
+	return crypto.BuildJWTString(dbUser.ID, us.config.JWTExp, dbUser.Login, us.config.JWTSecret)
 }
 
 func (us *UserService) Register(
@@ -69,5 +69,5 @@ func (us *UserService) Register(
 		return "", err
 	}
 
-	return crypto.BuildJWTString(dbUser.ID, dbUser.Login, us.config.JWTSecret)
+	return crypto.BuildJWTString(dbUser.ID, us.config.JWTExp, dbUser.Login, us.config.JWTSecret)
 }

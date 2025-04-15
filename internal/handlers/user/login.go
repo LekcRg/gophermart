@@ -16,8 +16,8 @@ import (
 
 func (uh *UserHandler) checkLoginErrors(w http.ResponseWriter, err error, lang string) {
 	if errors.Is(err, pgx.ErrNoRows) ||
-		errors.Is(err, errs.IncorrectPassword) ||
-		errors.Is(err, errs.NotFoundUser) {
+		errors.Is(err, errs.ErrIncorrectPassword) ||
+		errors.Is(err, errs.ErrNotFoundUser) {
 		logger.Log.Info(logContext + "user or password not found")
 		httputils.ErrJSON(w, "user or password not found", http.StatusBadRequest)
 		return
@@ -68,7 +68,7 @@ func (uh *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	res := models.AuthResponse{
 		Token: token,
 	}
-	resJson, err := json.Marshal(res)
+	resJSON, err := json.Marshal(res)
 	if err != nil {
 		logger.Log.Error(logContext+"error while marshal json response",
 			zap.Error(err))
@@ -79,5 +79,5 @@ func (uh *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Authorization", "Bearer "+token)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(resJson)
+	w.Write(resJSON)
 }

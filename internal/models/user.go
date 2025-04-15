@@ -9,9 +9,9 @@ type DBUser struct {
 }
 
 type JWTClaim struct {
-	jwt.RegisteredClaims `json:"-"`
-	Login                string
-	ID                   int
+	jwt.RegisteredClaims
+	Login string
+	ID    int
 }
 
 type LoginRequest struct {

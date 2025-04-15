@@ -97,6 +97,6 @@ func (oh *OrdersHandler) UploadOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Add("Content-Type", "text/plain")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusAccepted)
 	w.Write([]byte("Success"))
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/LekcRg/gophermart/internal/crypto"
 	"github.com/LekcRg/gophermart/internal/httputils"
 	"github.com/LekcRg/gophermart/internal/logger"
+	"github.com/LekcRg/gophermart/internal/models"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
 )
@@ -75,7 +76,7 @@ func Auth(secret string) func(http.Handler) http.Handler {
 
 			claim, err := crypto.GetUserClaims(token, secret)
 			if err != nil {
-				logger.Log.Error("error parse jwt token",
+				logger.Log.Info("[auth middleware]: error parse jwt token",
 					zap.Error(err))
 				httputils.ErrJSON(w, "Unauthorized", http.StatusUnauthorized)
 				return
@@ -86,7 +87,10 @@ func Auth(secret string) func(http.Handler) http.Handler {
 				zap.Int("id", claim.ID),
 			)
 
-			ctx := context.WithValue(r.Context(), crypto.UserContextKey, claim)
+			ctx := context.WithValue(r.Context(), crypto.UserContextKey, models.DBUser{
+				Login: claim.Login,
+				ID:    claim.ID,
+			})
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

@@ -57,13 +57,13 @@ func (up *UserPostgres) Login(
 		return nil, err
 	}
 	if userDB.PasswordHash == "" {
-		return nil, errs.NotFoundUser
+		return nil, errs.ErrNotFoundUser
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(userDB.PasswordHash), []byte(user.Password))
 	if err != nil {
-		// maybe NotFoundUser error
-		return nil, errs.IncorrectPassword
+		// maybe ErrNotFoundUser error
+		return nil, errs.ErrIncorrectPassword
 	}
 	userDB.PasswordHash = ""
 

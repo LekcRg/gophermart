@@ -47,7 +47,7 @@ func (os *OrdersService) UploadOrder(
 
 	// TODO: request
 	// got status
-	status := repository.ORDER_STATUS_NEW
+	status := repository.OrderStatusNew
 
 	err = os.db.Create(ctx, order, status, user)
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/knadh/koanf/parsers/dotenv"
 	"github.com/knadh/koanf/providers/env"
@@ -16,16 +17,17 @@ import (
 
 // don't forget to change the getFlags func
 type Config struct {
-	IsDev          bool   `koanf:"IS_DEV"`
-	DBPass         string `koanf:"POSTGRES_PASSWORD"`
-	DBUser         string `koanf:"POSTGRES_USER"`
-	DBHost         string `koanf:"POSTGRES_HOST"`
-	DBName         string `koanf:"POSTGRES_DB"`
-	DBPort         int    `koanf:"POSTGRES_PORT"`
-	DBURI          string `koanf:"DATABASE_URI"`
-	Address        string `koanf:"RUN_ADDRESS"`
-	AccrualAddress string `koanf:"ACCRUAL_SYSTEM_ADDRESS"`
-	JWTSecret      string `koanf:"JWT_SECRET_KEY"`
+	IsDev          bool          `koanf:"IS_DEV"`
+	DBPass         string        `koanf:"POSTGRES_PASSWORD"`
+	DBUser         string        `koanf:"POSTGRES_USER"`
+	DBHost         string        `koanf:"POSTGRES_HOST"`
+	DBName         string        `koanf:"POSTGRES_DB"`
+	DBPort         int           `koanf:"POSTGRES_PORT"`
+	DBURI          string        `koanf:"DATABASE_URI"`
+	Address        string        `koanf:"RUN_ADDRESS"`
+	AccrualAddress string        `koanf:"ACCRUAL_SYSTEM_ADDRESS"`
+	JWTSecret      string        `koanf:"JWT_SECRET_KEY"`
+	JWTExp         time.Duration `koanf:"JWT_TOKEN_EXP"`
 }
 
 var k = koanf.New(".")
@@ -42,6 +44,7 @@ func getFlags() {
 	fl.StringP("DATABASE_URI", "d", "", "Database URI")
 	fl.StringP("ACCRUAL_SYSTEM_ADDRESS", "r", "", "Accrual system address")
 	fl.StringP("JWT_SECRET_KEY", "j", "", "JWT secret key")
+	fl.DurationP("JWTExp", "e", time.Minute*30, "JWT secret key")
 
 	fl.Parse(os.Args[1:])
 	if err := k.Load(posflag.Provider(fl, ".", k), nil); err != nil {

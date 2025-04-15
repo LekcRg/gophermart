@@ -13,13 +13,12 @@ type key int
 
 const UserContextKey key = iota
 
-// TODO: get token_exp from config
-const TOKEN_EXP = time.Hour * 3
-
-func BuildJWTString(id int, login, secret string) (string, error) {
+func BuildJWTString(id int, exp time.Duration, login, secret string) (string, error) {
+	fmt.Println(jwt.NewNumericDate(time.Now().Add(2 * time.Hour)))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, models.JWTClaim{
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TOKEN_EXP)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(exp)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 		Login: login,
 		ID:    id,
@@ -33,6 +32,7 @@ func GetUserClaims(token, secret string) (models.JWTClaim, error) {
 	parsedToken, err := jwt.ParseWithClaims(token, &claim, func(token *jwt.Token) (any, error) {
 		return []byte(secret), nil
 	})
+
 	if err != nil {
 		return claim, err
 	}
@@ -44,10 +44,10 @@ func GetUserClaims(token, secret string) (models.JWTClaim, error) {
 	return claim, nil
 }
 
-func GetUserFromCtx(ctx context.Context) (models.JWTClaim, error) {
-	user, ok := ctx.Value(UserContextKey).(models.JWTClaim)
+func GetUserFromCtx(ctx context.Context) (models.DBUser, error) {
+	user, ok := ctx.Value(UserContextKey).(models.DBUser)
 	if !ok {
-		return models.JWTClaim{}, fmt.Errorf("not found")
+		return models.DBUser{}, fmt.Errorf("not found")
 	}
 
 	return user, nil

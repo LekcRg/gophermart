@@ -35,7 +35,7 @@ func New(cfg config.Config, us UserService, validator *validator.Validator) *Use
 	}
 }
 
-// IsAuth godoc
+// UserInfo godoc
 // @Summary      Информация о пользователе
 // @Description  Информация о пользователе возвращается id и логин
 // @Tags         Auth
@@ -46,7 +46,7 @@ func New(cfg config.Config, us UserService, validator *validator.Validator) *Use
 // @Failure      500 {object} httputils.ErrorJSON "Internal server error"
 // @Router       /api/user/info [get]
 // @Security     BearerAuth
-func (us *UserHandler) Info(w http.ResponseWriter, r *http.Request) {
+func (uh *UserHandler) Info(w http.ResponseWriter, r *http.Request) {
 	user, err := crypto.GetUserFromCtx(r.Context())
 	if err != nil {
 		logger.Log.Error("error while getting user data from context")

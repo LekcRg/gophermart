@@ -23,12 +23,12 @@ type UserRepository interface {
 
 type OrdersRepository interface {
 	// GetOne() error
-	Create(ctx context.Context, order string, status string, user models.JWTClaim) error
+	Create(ctx context.Context, order string, status string, user models.DBUser) error
 }
 
 const (
-	ORDER_STATUS_NEW        = "NEW"
-	ORDER_STATUS_PROCESSING = "PROCESSING"
-	ORDER_STATUS_INVALID    = "INVALID"
-	ORDER_STATUS_PROCESSED  = "PROCESSED"
+	OrderStatusNew        = "NEW"
+	OrderStatusProcessing = "PROCESSING"
+	OrderStatusInvalid    = "INVALID"
+	OrderStatusProcessed  = "PROCESSED"
 )

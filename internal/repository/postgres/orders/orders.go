@@ -49,7 +49,7 @@ func New(ctx context.Context, db *pgxpool.Pool) *OrdersPostgres {
 }
 
 func (op OrdersPostgres) Create(
-	ctx context.Context, num string, status string, user models.JWTClaim,
+	ctx context.Context, num string, status string, user models.DBUser,
 ) error {
 	query := `INSERT INTO orders (number, status, user_login, updated_at)
 		values($1, $2, $3, now())`
