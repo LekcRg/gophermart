@@ -2,20 +2,27 @@ package orders
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
 
 	"github.com/LekcRg/gophermart/internal/config"
+	"github.com/LekcRg/gophermart/internal/httputils"
 	"github.com/LekcRg/gophermart/internal/logger"
+	"github.com/LekcRg/gophermart/internal/models"
 	"github.com/LekcRg/gophermart/internal/repository"
 	"github.com/LekcRg/gophermart/internal/validator"
 	"go.uber.org/zap"
 )
 
+var logContext = "OrderHandler"
+
 type OrdersService interface {
 	UploadOrder(ctx context.Context, order string) error
+	GetOrders(ctx context.Context) ([]models.OrderDB, error)
 }
 
 type OrdersHandler struct {
@@ -39,30 +46,39 @@ func New(
 func (oh *OrdersHandler) checkUploadOrderError(
 	w http.ResponseWriter, err error, lang string,
 ) {
+	logContext := fmt.Sprintf("[%s/Login] ", logContext)
 	var validErrs validator.ValidationErrors
 	if err == repository.ErrOrdersRegisteredThisUser {
+		logger.Log.Info(logContext, zap.Error(err))
 		http.Error(w, err.Error(), http.StatusOK)
+		return
 	} else if err == repository.ErrOrdersRegisteredOtherUser {
+		logger.Log.Info(logContext, zap.Error(err))
 		http.Error(w, err.Error(), http.StatusConflict)
+		return
 	} else if errors.As(err, &validErrs) &&
 		len(validErrs) > 0 {
 		trans := oh.validator.GetTrans(lang)
 		tr, err := trans.T(validErrs[0].Tag())
 		if err != nil {
-			logger.Log.Error("[%s/checkUploadOrderError] "+"error getting translate",
+			logger.Log.Error(logContext+"error getting translate",
 				zap.Error(err))
 			http.Error(w, "error", http.StatusUnprocessableEntity)
 		}
 
-		logger.Log.Info("[%s/checkUploadOrderError] " + "Bad order number")
+		logger.Log.Info(logContext + "Bad order number")
 		http.Error(w, tr, http.StatusUnprocessableEntity)
 		return
 	}
+
+	logger.Log.Error(logContext+"internal error",
+		zap.Error(err))
+	http.Error(w, "Internal server error", http.StatusInternalServerError)
 }
 
 // UploadOrder godoc
 // @Summary      Загрузка номера заказа
-// @Description  Доступен только аутентифицированным пользователям. Номером заказа является последовательность цифр произвольной длины.
+// @Description  Загрузка заказов пользователя
 // @Tags         Orders
 // @Accept       text/plain
 // @Produce      text/plain
@@ -104,4 +120,41 @@ func (oh *OrdersHandler) UploadOrder(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusAccepted)
 	w.Write([]byte("Success"))
+}
+
+// UploadOrder godoc
+// @Summary      Загрузка заказов пользователя
+// @Description  Загрузка заказов пользователя
+// @Tags         Orders
+// @Produce      json
+// @Success      200 "Номер заказа уже был загружен этим пользователем"
+// @Success      204 "нет данных для ответа"
+// @Failure      500 "Внутренняя ошибка сервера"
+// @Router       /api/user/orders [get]
+// @Security     BearerAuth
+func (oh *OrdersHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
+	orders, err := oh.service.GetOrders(r.Context())
+	w.Header().Add("Content-Type", "application/json")
+	if err != nil {
+		logger.Log.Error("get orders err",
+			zap.Error(err))
+		httputils.ErrJSON(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(orders) > 0 {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusNoContent)
+	}
+
+	res, err := json.Marshal(orders)
+	if err != nil {
+		logger.Log.Error("get orders err",
+			zap.Error(err))
+		httputils.ErrJSON(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(res)
 }

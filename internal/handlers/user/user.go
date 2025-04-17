@@ -41,7 +41,7 @@ func New(cfg config.Config, us UserService, validator *validator.Validator) *Use
 // @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Success      200 {object} models.JWTClaim "User info"
+// @Success      200 {object} models.DBUser "User info"
 // @Failure      401 {object} httputils.ErrorJSON "Unauthorized"
 // @Failure      500 {object} httputils.ErrorJSON "Internal server error"
 // @Router       /api/user/info [get]

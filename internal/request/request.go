@@ -1,10 +1,12 @@
 package request
 
 import (
+	"encoding/json"
 	"fmt"
-	"io"
+	"net/http"
 
 	"github.com/LekcRg/gophermart/internal/logger"
+	"github.com/LekcRg/gophermart/internal/models"
 	"go.uber.org/zap"
 	"resty.dev/v3"
 )
@@ -20,33 +22,30 @@ func New(accrualAddr string) *Request {
 	}
 }
 
-func (r *Request) GetAccrual(orderNum string) {
-	// HTTP, REST Client
+var ErrNotRegisteredOrder = fmt.Errorf("заказ не зарегистрирован в системе расчёта")
+
+func (r *Request) GetAccrual(orderNum string) (models.AccrualRes, error) {
 	client := resty.New()
 	defer client.Close()
-
-	// res, err := client.R().
-	// 	EnableTrace().
-	// 	Get("https://httpbin.org/get")
-	// fmt.Println(err)
-	// fmt.Println(res)
-	// fmt.Println(res.Request.TraceInfo())
 
 	res, err := client.R().
 		Get(r.accrualAddr + "/api/orders/" + orderNum)
 	if err != nil {
+		if res.StatusCode() == http.StatusNoContent {
+			logger.Log.Info("Get accrual no content")
+			return models.AccrualRes{}, ErrNotRegisteredOrder
+		}
 		logger.Log.Error("Get accrual err",
 			zap.Error(err))
-		return
+		return models.AccrualRes{}, err
 	}
-	fmt.Println(res)
-	fmt.Println(res.Status())
-	// var body map[string]string
-	body, err := io.ReadAll(res.Body)
+
+	var resStruct models.AccrualRes
+	err = json.Unmarshal(res.Bytes(), &resStruct)
 	if err != nil {
-		logger.Log.Error("read response accrual body err",
-			zap.Error(err))
+		logger.Log.Error("err unmarshal", zap.Error(err))
+		return models.AccrualRes{}, err
 	}
-	defer res.Body.Close()
-	fmt.Println(string(body))
+
+	return resStruct, nil
 }

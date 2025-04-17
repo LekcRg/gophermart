@@ -37,7 +37,7 @@ const docTemplate = `{
                     "200": {
                         "description": "User info",
                         "schema": {
-                            "$ref": "#/definitions/models.JWTClaim"
+                            "$ref": "#/definitions/models.DBUser"
                         }
                     },
                     "401": {
@@ -108,13 +108,39 @@ const docTemplate = `{
             }
         },
         "/api/user/orders": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Загрузка заказов пользователя",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Загрузка заказов пользователя",
+                "responses": {
+                    "200": {
+                        "description": "Номер заказа уже был загружен этим пользователем"
+                    },
+                    "204": {
+                        "description": "нет данных для ответа"
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера"
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Доступен только аутентифицированным пользователям. Номером заказа является последовательность цифр произвольной длины.",
+                "description": "Загрузка заказов пользователя",
                 "consumes": [
                     "text/plain"
                 ],
@@ -231,7 +257,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.JWTClaim": {
+        "models.DBUser": {
             "type": "object",
             "properties": {
                 "id": {

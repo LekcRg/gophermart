@@ -34,6 +34,7 @@ func New(ctx context.Context, db *pgxpool.Pool) *OrdersPostgres {
 		id serial NOT NULL PRIMARY KEY,
 		order_id varchar(50) NOT NULL UNIQUE,
 		status order_status NOT NULL,
+		accrual double precision,
 		uploaded_at TIMESTAMP NOT NULL DEFAULT now(),
 		updated_at TIMESTAMP NOT NULL DEFAULT now(),
 		user_login varchar(30) NOT NULL REFERENCES users (LOGIN)
@@ -51,6 +52,34 @@ func New(ctx context.Context, db *pgxpool.Pool) *OrdersPostgres {
 	}
 }
 
+func (op OrdersPostgres) GetOrdersByUserLogin(
+	ctx context.Context, userLogin string,
+) ([]models.OrderDB, error) {
+	query := `select order_id, status, accrual, user_login, uploaded_at from orders
+	where user_login = $1`
+
+	orders := []models.OrderDB{}
+	rows, err := op.db.Query(ctx, query, userLogin)
+	if err != nil {
+		return orders, err
+	}
+
+	for rows.Next() {
+		var order models.OrderDB
+
+		err := rows.Scan(
+			&order.OrderID, &order.Status, &order.Accrual,
+			&order.UserLogin, &order.UploadedAt)
+		if err != nil {
+			return orders, err
+		}
+
+		orders = append(orders, order)
+	}
+
+	return orders, nil
+}
+
 func (op OrdersPostgres) GetOrderByOrderID(
 	ctx context.Context, orderID string,
 ) (models.OrderDB, error) {
@@ -60,8 +89,8 @@ func (op OrdersPostgres) GetOrderByOrderID(
 	order := models.OrderDB{}
 	row := op.db.QueryRow(ctx, query, orderID)
 	err := row.Scan(
-		order.ID, order.OrderID, order.Status,
-		order.UserLogin, order.UploadedAt, order.UpdatedAt)
+		&order.ID, &order.OrderID, &order.Status,
+		&order.UserLogin, &order.UploadedAt, &order.UpdatedAt)
 	if err != nil {
 		return models.OrderDB{}, err
 	}
@@ -69,15 +98,28 @@ func (op OrdersPostgres) GetOrderByOrderID(
 	return order, nil
 }
 
-func (op *OrdersPostgres) Create(
-	ctx context.Context, num string, status string, user models.DBUser,
+func (op OrdersPostgres) UpdateOrder(
+	ctx context.Context, orderID, status string, accrual float64,
 ) error {
-	query := `INSERT INTO orders (order_id, status, user_login, updated_at)
-		values($1, $2, $3, now())`
+	query := `UPDATE orders SET status = $1 WHERE order_id = $2`
+	_, err := op.db.Exec(ctx, query, status, orderID)
+	if err != nil {
+		return err
+	}
 
-	_, err := op.db.Exec(ctx, query, num, status, user.Login)
+	return nil
+}
+
+func (op *OrdersPostgres) Create(
+	ctx context.Context, order models.OrderCreateDB, user models.DBUser,
+) error {
+	query := `INSERT INTO orders (order_id, accrual, status, user_login, updated_at)
+		values($1, $2, $3, $4, now())`
+
+	_, err := op.db.Exec(ctx, query,
+		order.OrderID, order.Accrual, order.Status, user.Login)
 	if err != nil && pgutils.IsNotUnique(err) {
-		oldOrder, err := op.GetOrderByOrderID(ctx, num)
+		oldOrder, err := op.GetOrderByOrderID(ctx, order.OrderID)
 		if err != nil {
 			return err
 		}

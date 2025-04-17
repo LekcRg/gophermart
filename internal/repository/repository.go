@@ -37,6 +37,7 @@ type UserRepository interface {
 }
 
 type OrdersRepository interface {
-	// GetOne() error
-	Create(ctx context.Context, order string, status string, user models.DBUser) error
+	GetOrdersByUserLogin(ctx context.Context, userLogin string) ([]models.OrderDB, error)
+	Create(ctx context.Context, order models.OrderCreateDB, user models.DBUser) error
+	UpdateOrder(ctx context.Context, orderID, status string, accrual float64) error
 }

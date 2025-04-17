@@ -14,6 +14,7 @@ import (
 	"github.com/LekcRg/gophermart/internal/logger"
 	"github.com/LekcRg/gophermart/internal/repository"
 	"github.com/LekcRg/gophermart/internal/repository/postgres"
+	"github.com/LekcRg/gophermart/internal/request"
 	"github.com/LekcRg/gophermart/internal/router"
 	"github.com/LekcRg/gophermart/internal/service"
 	"github.com/LekcRg/gophermart/internal/validator"
@@ -62,7 +63,8 @@ func main() {
 	dbProvider := postgres.New(ctx, cfg)
 	valid := validator.New()
 	repos := dbProvider.GetRepositories()
-	services := service.New(repos, valid, cfg)
+	req := request.New(cfg.AccrualAddress)
+	services := service.New(repos, valid, cfg, req)
 	handlers := handlers.New(cfg, services, valid)
 	routes := router.New(handlers, cfg.JWTSecret)
 

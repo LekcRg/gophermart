@@ -10,7 +10,7 @@ definitions:
       token:
         type: string
     type: object
-  models.JWTClaim:
+  models.DBUser:
     properties:
       id:
         type: integer
@@ -57,7 +57,7 @@ paths:
         "200":
           description: User info
           schema:
-            $ref: '#/definitions/models.JWTClaim'
+            $ref: '#/definitions/models.DBUser'
         "401":
           description: Unauthorized
           schema:
@@ -107,11 +107,26 @@ paths:
       tags:
       - Auth
   /api/user/orders:
+    get:
+      description: Загрузка заказов пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Номер заказа уже был загружен этим пользователем
+        "204":
+          description: нет данных для ответа
+        "500":
+          description: Внутренняя ошибка сервера
+      security:
+      - BearerAuth: []
+      summary: Загрузка заказов пользователя
+      tags:
+      - Orders
     post:
       consumes:
       - text/plain
-      description: Доступен только аутентифицированным пользователям. Номером заказа
-        является последовательность цифр произвольной длины.
+      description: Загрузка заказов пользователя
       parameters:
       - description: Номер заказа
         in: body
