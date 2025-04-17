@@ -8,7 +8,6 @@ import (
 	"github.com/LekcRg/gophermart/internal/logger"
 	"github.com/LekcRg/gophermart/internal/repository"
 	"github.com/LekcRg/gophermart/internal/validator"
-	"go.uber.org/zap"
 )
 
 type OrdersService struct {
@@ -49,11 +48,11 @@ func (os *OrdersService) UploadOrder(
 	// got status
 	status := repository.OrderStatusNew
 
-	err = os.db.Create(ctx, order, status, user)
-	if err != nil {
-		logger.Log.Error("order service db err",
-			zap.Error(err))
-	}
+	return os.db.Create(ctx, order, status, user)
+	// if err != nil {
+	// 	logger.Log.Error("order service db err",
+	// 		zap.Error(err))
+	// }
 
-	return nil
+	// return nil
 }

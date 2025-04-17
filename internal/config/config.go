@@ -31,6 +31,18 @@ type Config struct {
 }
 
 var k = koanf.New(".")
+var defaultCfg = Config{
+	DBPass:         "postgres",
+	DBUser:         "postgres",
+	DBHost:         "localhost",
+	DBPort:         5432,
+	DBName:         "gophermart",
+	DBURI:          "",
+	Address:        "localhost:8000",
+	AccrualAddress: "localhost:8000",
+	JWTSecret:      "!!!Sup3r$$$ecr2tDef4u1t!!!",
+	JWTExp:         time.Minute * 30,
+}
 
 func getFlags() {
 	fl := flag.NewFlagSet("config", flag.ContinueOnError)
@@ -53,16 +65,6 @@ func getFlags() {
 }
 
 func getDefaults() {
-	defaultCfg := Config{
-		DBPass:         "postgres",
-		DBUser:         "postgres",
-		DBHost:         "localhost",
-		DBPort:         5432,
-		DBName:         "gophermart",
-		DBURI:          "",
-		Address:        "localhost:8080",
-		AccrualAddress: "localhost:8000",
-	}
 	k.Load(structs.Provider(defaultCfg, "koanf"), nil)
 }
 
@@ -95,6 +97,12 @@ func Get() Config {
 		cfg.DBName != "" && cfg.DBPort != 0 {
 		cfg.DBURI = fmt.Sprintf("postgresql://%s:%s@%s:%d/%s",
 			cfg.DBUser, cfg.DBPass, cfg.DBHost, cfg.DBPort, cfg.DBName)
+	}
+
+	if cfg.JWTSecret == defaultCfg.JWTSecret {
+		fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!")
+		fmt.Println("CHANGE DEFAULT JWT SECRET")
+		fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!")
 	}
 
 	return cfg

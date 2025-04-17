@@ -2,8 +2,23 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/LekcRg/gophermart/internal/models"
+)
+
+const (
+	OrderStatusNew        = "NEW"
+	OrderStatusProcessing = "PROCESSING"
+	OrderStatusInvalid    = "INVALID"
+	OrderStatusProcessed  = "PROCESSED"
+)
+
+var (
+	ErrOrdersRegisteredOtherUser = fmt.Errorf(
+		"order has already been uploaded by another user")
+	ErrOrdersRegisteredThisUser = fmt.Errorf(
+		"order has already been uploaded by this user")
 )
 
 type Repository struct {
@@ -25,10 +40,3 @@ type OrdersRepository interface {
 	// GetOne() error
 	Create(ctx context.Context, order string, status string, user models.DBUser) error
 }
-
-const (
-	OrderStatusNew        = "NEW"
-	OrderStatusProcessing = "PROCESSING"
-	OrderStatusInvalid    = "INVALID"
-	OrderStatusProcessed  = "PROCESSED"
-)

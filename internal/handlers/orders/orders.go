@@ -9,6 +9,7 @@ import (
 
 	"github.com/LekcRg/gophermart/internal/config"
 	"github.com/LekcRg/gophermart/internal/logger"
+	"github.com/LekcRg/gophermart/internal/repository"
 	"github.com/LekcRg/gophermart/internal/validator"
 	"go.uber.org/zap"
 )
@@ -39,7 +40,11 @@ func (oh *OrdersHandler) checkUploadOrderError(
 	w http.ResponseWriter, err error, lang string,
 ) {
 	var validErrs validator.ValidationErrors
-	if errors.As(err, &validErrs) &&
+	if err == repository.ErrOrdersRegisteredThisUser {
+		http.Error(w, err.Error(), http.StatusOK)
+	} else if err == repository.ErrOrdersRegisteredOtherUser {
+		http.Error(w, err.Error(), http.StatusConflict)
+	} else if errors.As(err, &validErrs) &&
 		len(validErrs) > 0 {
 		trans := oh.validator.GetTrans(lang)
 		tr, err := trans.T(validErrs[0].Tag())
