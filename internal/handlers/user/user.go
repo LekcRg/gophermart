@@ -17,6 +17,7 @@ import (
 type UserService interface {
 	Register(ctx context.Context, user models.RegisterRequest) (string, error)
 	Login(ctx context.Context, user models.LoginRequest) (string, error)
+	Balance(ctx context.Context) (models.UserBalance, error)
 }
 
 type UserHandler struct {
@@ -60,6 +61,36 @@ func (uh *UserHandler) Info(w http.ResponseWriter, r *http.Request) {
 		httputils.ErrInternalJSON(w)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(res)
+}
+
+// UserBalance godoc
+// @Summary      Информация о балансе пользователя
+// @Description  Информация о балансе пользователя
+// @Tags         User
+// @Produce      json
+// @Success      200 {object} models.UserBalance "User info"
+// @Failure      401 {object} httputils.ErrorJSON "Unauthorized"
+// @Failure      500 {object} httputils.ErrorJSON "Internal server error"
+// @Router       /api/user/balance [get]
+// @Security     BearerAuth
+func (uh *UserHandler) Balance(w http.ResponseWriter, r *http.Request) {
+	userBalance, err := uh.service.Balance(r.Context())
+	if err != nil {
+		logger.Log.Error("error getting balance",
+			zap.Error(err))
+		httputils.ErrInternalJSON(w)
+	}
+
+	res, err := json.Marshal(userBalance)
+	if err != nil {
+		logger.Log.Error("error marshal user balance",
+			zap.Error(err))
+		httputils.ErrInternalJSON(w)
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(res)

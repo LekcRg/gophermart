@@ -71,3 +71,12 @@ func (us *UserService) Register(
 
 	return crypto.BuildJWTString(dbUser.ID, us.config.JWTExp, dbUser.Login, us.config.JWTSecret)
 }
+
+func (us *UserService) Balance(ctx context.Context) (models.UserBalance, error) {
+	user, err := crypto.GetUserFromCtx(ctx)
+	if err != nil {
+		return models.UserBalance{}, err
+	}
+
+	return us.db.GetBalance(ctx, user.Login)
+}

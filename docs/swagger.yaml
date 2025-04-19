@@ -39,6 +39,13 @@ definitions:
     - login
     - password
     type: object
+  models.UserBalance:
+    properties:
+      current:
+        type: number
+      withdrawn:
+        type: number
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -46,6 +53,29 @@ info:
   title: Gophermart API
   version: "1.0"
 paths:
+  /api/user/balance:
+    get:
+      description: Информация о балансе пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User info
+          schema:
+            $ref: '#/definitions/models.UserBalance'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+      security:
+      - BearerAuth: []
+      summary: Информация о балансе пользователя
+      tags:
+      - User
   /api/user/info:
     get:
       consumes:

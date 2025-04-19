@@ -29,3 +29,8 @@ type RegisterRequest struct {
 type AuthResponse struct {
 	Token string `json:"token"`
 }
+
+type UserBalance struct {
+	Balance   float64 `json:"current"`
+	Withdrawn float64 `json:"withdrawn"`
+}

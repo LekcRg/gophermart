@@ -20,6 +20,7 @@ func New(ctx context.Context, db *pgxpool.Pool) *UserPostgres {
 		id SERIAL PRIMARY KEY,
 		LOGIN VARCHAR(30) UNIQUE NOT NULL,
 		balance DOUBLE PRECISION NOT NULL DEFAULT 0,
+		withdrawn DOUBLE PRECISION NOT NULL DEFAULT 0,
 		passhash varchar(72) NOT NULL
 	)`
 	_, err := db.Exec(ctx, query)
@@ -81,4 +82,19 @@ func (up *UserPostgres) Login(
 	userDB.PasswordHash = ""
 
 	return &userDB, nil
+}
+
+func (up *UserPostgres) GetBalance(
+	ctx context.Context, userLogin string,
+) (models.UserBalance, error) {
+	query := `SELECT balance, withdrawn FROM users WHERE login = $1`
+	user := models.UserBalance{}
+	row := up.db.QueryRow(ctx, query, userLogin)
+
+	err := row.Scan(&user.Balance, &user.Withdrawn)
+	if err != nil {
+		return user, nil
+	}
+
+	return user, nil
 }

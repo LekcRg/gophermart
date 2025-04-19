@@ -36,6 +36,7 @@ func New(handlers *handlers.Handlers, secret string) chi.Router {
 				r.Get("/info", handlers.User.Info)
 				r.Post("/orders", handlers.Orders.UploadOrder)
 				r.Get("/orders", handlers.Orders.GetOrders)
+				r.Get("/balance", handlers.User.Balance)
 			})
 
 			r.Get("/test", func(w http.ResponseWriter, r *http.Request) {
