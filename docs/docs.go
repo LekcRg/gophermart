@@ -27,7 +27,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "Balance"
                 ],
                 "summary": "Информация о балансе пользователя",
                 "responses": {
@@ -39,6 +39,58 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputils.ErrorJSON"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httputils.ErrorJSON"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/balance/withdraw": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Запрос на списание средств",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Balance"
+                ],
+                "summary": "Запрос на списание средств",
+                "responses": {
+                    "200": {
+                        "description": "Успешно"
+                    },
+                    "400": {
+                        "description": "Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputils.ErrorJSON"
+                        }
+                    },
+                    "402": {
+                        "description": "На счету недостаточно средств",
                         "schema": {
                             "$ref": "#/definitions/httputils.ErrorJSON"
                         }
@@ -275,6 +327,49 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/user/withdrawals": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Получение информации о выводе средств",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Balance"
+                ],
+                "summary": "Получение информации о выводе средств",
+                "responses": {
+                    "200": {
+                        "description": "Успешно",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Withdraw"
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "нет ни одного списания"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httputils.ErrorJSON"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httputils.ErrorJSON"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -344,6 +439,20 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "withdrawn": {
+                    "type": "number"
+                }
+            }
+        },
+        "models.Withdraw": {
+            "type": "object",
+            "properties": {
+                "order": {
+                    "type": "string"
+                },
+                "processed_at": {
+                    "type": "string"
+                },
+                "sum": {
                     "type": "number"
                 }
             }

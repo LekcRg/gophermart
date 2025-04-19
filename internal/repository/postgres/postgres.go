@@ -8,6 +8,7 @@ import (
 	"github.com/LekcRg/gophermart/internal/repository"
 	"github.com/LekcRg/gophermart/internal/repository/postgres/orders"
 	"github.com/LekcRg/gophermart/internal/repository/postgres/user"
+	"github.com/LekcRg/gophermart/internal/repository/postgres/withdraw"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
@@ -27,8 +28,9 @@ func New(ctx context.Context, cfg config.Config) *Postgres {
 	return &Postgres{
 		db: conn,
 		repos: &repository.Repository{
-			User:   user.New(ctx, conn),
-			Orders: orders.New(ctx, conn),
+			User:     user.New(ctx, conn),
+			Orders:   orders.New(ctx, conn),
+			Withdraw: withdraw.New(ctx, conn),
 		},
 	}
 }

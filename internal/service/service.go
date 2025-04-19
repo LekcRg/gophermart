@@ -6,12 +6,14 @@ import (
 	"github.com/LekcRg/gophermart/internal/request"
 	"github.com/LekcRg/gophermart/internal/service/orders"
 	"github.com/LekcRg/gophermart/internal/service/user"
+	"github.com/LekcRg/gophermart/internal/service/withdraw"
 	"github.com/LekcRg/gophermart/internal/validator"
 )
 
 type Service struct {
-	User   user.UserService
-	Orders orders.OrdersService
+	User     user.UserService
+	Orders   orders.OrdersService
+	Withdraw withdraw.WithdrawService
 }
 
 func New(
@@ -19,7 +21,8 @@ func New(
 	cfg config.Config, req *request.Request,
 ) *Service {
 	return &Service{
-		User:   *user.New(db.User, validator, cfg),
-		Orders: *orders.New(db.Orders, validator, cfg, req, db.User),
+		User:     *user.New(db.User, validator, cfg),
+		Orders:   *orders.New(db.Orders, validator, cfg, req, db.User),
+		Withdraw: *withdraw.New(db.Withdraw, db.User, validator),
 	}
 }

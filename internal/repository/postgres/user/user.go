@@ -2,10 +2,13 @@ package user
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/LekcRg/gophermart/internal/errs"
 	"github.com/LekcRg/gophermart/internal/logger"
 	"github.com/LekcRg/gophermart/internal/models"
+	"github.com/LekcRg/gophermart/internal/repository"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
@@ -97,4 +100,23 @@ func (up *UserPostgres) GetBalance(
 	}
 
 	return user, nil
+}
+
+func (up *UserPostgres) WithdrawBalance(
+	ctx context.Context, UserLogin string, withdraw models.WithdrawRequest,
+) error {
+	query := `UPDATE users SET balance = balance - $1
+	WHERE login = $2 AND balance >= $1
+	RETURNING users.balance`
+	row := up.db.QueryRow(ctx, query, withdraw.Sum, UserLogin)
+
+	var newBalance sql.NullFloat64
+	err := row.Scan(&newBalance)
+	if err != nil && err == pgx.ErrNoRows {
+		return repository.ErrUserSmallBalance
+	} else if err != nil {
+		return err
+	}
+
+	return nil
 }

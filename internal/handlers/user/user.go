@@ -69,7 +69,7 @@ func (uh *UserHandler) Info(w http.ResponseWriter, r *http.Request) {
 // UserBalance godoc
 // @Summary      Информация о балансе пользователя
 // @Description  Информация о балансе пользователя
-// @Tags         User
+// @Tags         Balance
 // @Produce      json
 // @Success      200 {object} models.UserBalance "User info"
 // @Failure      401 {object} httputils.ErrorJSON "Unauthorized"

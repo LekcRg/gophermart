@@ -46,6 +46,15 @@ definitions:
       withdrawn:
         type: number
     type: object
+  models.Withdraw:
+    properties:
+      order:
+        type: string
+      processed_at:
+        type: string
+      sum:
+        type: number
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -75,7 +84,40 @@ paths:
       - BearerAuth: []
       summary: Информация о балансе пользователя
       tags:
-      - User
+      - Balance
+  /api/user/balance/withdraw:
+    post:
+      consumes:
+      - application/json
+      description: Запрос на списание средств
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешно
+        "400":
+          description: Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+        "402":
+          description: На счету недостаточно средств
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+      security:
+      - BearerAuth: []
+      summary: Запрос на списание средств
+      tags:
+      - Balance
   /api/user/info:
     get:
       consumes:
@@ -221,6 +263,33 @@ paths:
       summary: Регистрация пользователя
       tags:
       - Auth
+  /api/user/withdrawals:
+    get:
+      description: Получение информации о выводе средств
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешно
+          schema:
+            items:
+              $ref: '#/definitions/models.Withdraw'
+            type: array
+        "204":
+          description: нет ни одного списания
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+      security:
+      - BearerAuth: []
+      summary: Получение информации о выводе средств
+      tags:
+      - Balance
 securityDefinitions:
   BearerAuth:
     in: header

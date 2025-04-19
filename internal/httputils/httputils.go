@@ -46,7 +46,7 @@ func ErrJSON(w http.ResponseWriter, errMsg string, code int) {
 }
 
 func ErrInternalJSON(w http.ResponseWriter) {
-	ErrJSON(w, "Inernal server error", http.StatusInternalServerError)
+	ErrJSON(w, "Internal server error", http.StatusInternalServerError)
 }
 
 func SuccessJSON(w http.ResponseWriter) {
