@@ -18,7 +18,8 @@ type UserPostgres struct {
 func New(ctx context.Context, db *pgxpool.Pool) *UserPostgres {
 	query := `CREATE TABLE IF NOT EXISTS users (
 		id SERIAL PRIMARY KEY,
-		login VARCHAR(30) UNIQUE NOT NULL,
+		LOGIN VARCHAR(30) UNIQUE NOT NULL,
+		balance DOUBLE PRECISION NOT NULL DEFAULT 0,
 		passhash varchar(72) NOT NULL
 	)`
 	_, err := db.Exec(ctx, query)
@@ -44,6 +45,18 @@ func (up *UserPostgres) Create(
 	}
 
 	return &userDB, nil
+}
+
+func (up *UserPostgres) UpdateBalance(
+	ctx context.Context, userLogin string, balance float64,
+) error {
+	query := `UPDATE users SET balance = balance + $1 WHERE login = $2;`
+	_, err := up.db.Exec(ctx, query, balance, userLogin)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (up *UserPostgres) Login(

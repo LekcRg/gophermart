@@ -34,6 +34,7 @@ type RepositoryProvider interface {
 type UserRepository interface {
 	Create(context.Context, models.DBUser) (*models.DBUser, error)
 	Login(context.Context, models.LoginRequest) (*models.DBUser, error)
+	UpdateBalance(ctx context.Context, userLogin string, balance float64) error
 }
 
 type OrdersRepository interface {

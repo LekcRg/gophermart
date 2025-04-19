@@ -19,12 +19,14 @@ type OrdersService struct {
 	validator *validator.Validator
 	db        repository.OrdersRepository
 	request   *request.Request
+	userDB    repository.UserRepository
 }
 
 func New(
 	db repository.OrdersRepository,
 	validator *validator.Validator,
 	config config.Config, req *request.Request,
+	userDB repository.UserRepository,
 ) *OrdersService {
 
 	return &OrdersService{
@@ -32,6 +34,7 @@ func New(
 		validator: validator,
 		request:   req,
 		db:        db,
+		userDB:    userDB,
 	}
 }
 
@@ -47,7 +50,9 @@ func (os *OrdersService) GetOrders(
 }
 
 // context ???
-func (os *OrdersService) StartMonitoringStatus(order models.OrderCreateDB) {
+func (os *OrdersService) StartMonitoringStatus(
+	order models.OrderCreateDB, userLogin string,
+) {
 	res, err := os.request.GetAccrual(order.OrderID)
 	if err != nil {
 		logger.Log.Error("[StartMonitoringStatus]: GetAccrual error",
@@ -58,20 +63,29 @@ func (os *OrdersService) StartMonitoringStatus(order models.OrderCreateDB) {
 		order.Status = res.Status
 		order.Accrual = res.Accrual
 
+		// TODO: Add transaction for update status + balance
 		err := os.db.UpdateOrder(context.Background(),
 			order.OrderID, order.Status, order.Accrual)
 		if err != nil {
 			logger.Log.Error("[StartMonitoringStatus]: update status error", zap.Error(err))
+		} else {
+			logger.Log.Info("[StartMonitoringStatus]: status updated",
+				zap.String("order number", order.OrderID),
+				zap.String("prev status", order.Status),
+				zap.String("new status", res.Status),
+			)
 		}
 	}
 
-	if res.Status == repository.OrderStatusInvalid ||
-		res.Status == repository.OrderStatusProcessed {
+	if order.Status == repository.OrderStatusProcessed {
+		os.userDB.UpdateBalance(context.Background(), userLogin, order.Accrual)
+		return
+	} else if order.Status == repository.OrderStatusInvalid {
 		return
 	}
 
 	time.Sleep(3 * time.Second)
-	os.StartMonitoringStatus(order)
+	os.StartMonitoringStatus(order, userLogin)
 }
 
 func (os *OrdersService) UploadOrder(
@@ -88,8 +102,6 @@ func (os *OrdersService) UploadOrder(
 		logger.Log.Error("error while getting user data from context")
 		return err
 	}
-
-	// TODO: request
 
 	isErrGetAccrual := false
 	res, err := os.request.GetAccrual(orderID)
@@ -114,6 +126,6 @@ func (os *OrdersService) UploadOrder(
 		return err
 	}
 
-	go os.StartMonitoringStatus(order)
+	go os.StartMonitoringStatus(order, user.Login)
 	return nil
 }

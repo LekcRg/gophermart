@@ -20,6 +20,6 @@ func New(
 ) *Service {
 	return &Service{
 		User:   *user.New(db.User, validator, cfg),
-		Orders: *orders.New(db.Orders, validator, cfg, req),
+		Orders: *orders.New(db.Orders, validator, cfg, req, db.User),
 	}
 }

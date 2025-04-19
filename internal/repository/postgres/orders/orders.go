@@ -101,8 +101,10 @@ func (op OrdersPostgres) GetOrderByOrderID(
 func (op OrdersPostgres) UpdateOrder(
 	ctx context.Context, orderID, status string, accrual float64,
 ) error {
-	query := `UPDATE orders SET status = $1 WHERE order_id = $2`
-	_, err := op.db.Exec(ctx, query, status, orderID)
+	query := `UPDATE orders SET
+		status = $1, accrual = $2, updated_at = now()
+		WHERE order_id = '3498573'`
+	_, err := op.db.Exec(ctx, query, status, orderID, accrual)
 	if err != nil {
 		return err
 	}
@@ -113,8 +115,8 @@ func (op OrdersPostgres) UpdateOrder(
 func (op *OrdersPostgres) Create(
 	ctx context.Context, order models.OrderCreateDB, user models.DBUser,
 ) error {
-	query := `INSERT INTO orders (order_id, accrual, status, user_login, updated_at)
-		values($1, $2, $3, $4, now())`
+	query := `INSERT INTO orders (order_id, accrual, status, user_login)
+		values($1, $2, $3, $4)`
 
 	_, err := op.db.Exec(ctx, query,
 		order.OrderID, order.Accrual, order.Status, user.Login)
