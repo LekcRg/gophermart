@@ -105,7 +105,7 @@ func (up *UserPostgres) GetBalance(
 func (up *UserPostgres) WithdrawBalance(
 	ctx context.Context, UserLogin string, withdraw models.WithdrawRequest,
 ) error {
-	query := `UPDATE users SET balance = balance - $1
+	query := `UPDATE users SET balance = balance - $1, withdrawn = withdrawn + $1
 	WHERE login = $2 AND balance >= $1
 	RETURNING users.balance`
 	row := up.db.QueryRow(ctx, query, withdraw.Sum, UserLogin)

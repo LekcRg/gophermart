@@ -16,8 +16,8 @@ type WithdrawPostgres struct {
 func New(ctx context.Context, db *pgxpool.Pool) *WithdrawPostgres {
 	query := `CREATE TABLE IF NOT EXISTS withdraw (
 		id SERIAL PRIMARY KEY,
+		order_id varchar(50) NOT NULL,
 		sum DOUBLE PRECISION DEFAULT 0,
-		order_id varchar(50) NOT NULL REFERENCES orders (order_id),
 		user_login varchar(30) NOT NULL REFERENCES users (login),
 		processed_at TIMESTAMP NOT NULL DEFAULT now()
 	)`

@@ -5,11 +5,9 @@ import (
 
 	"github.com/LekcRg/gophermart/internal/config"
 	"github.com/LekcRg/gophermart/internal/crypto"
-	"github.com/LekcRg/gophermart/internal/logger"
 	"github.com/LekcRg/gophermart/internal/models"
 	"github.com/LekcRg/gophermart/internal/repository"
 	"github.com/LekcRg/gophermart/internal/validator"
-	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -48,10 +46,6 @@ func (us *UserService) Login(
 func (us *UserService) Register(
 	ctx context.Context, user models.RegisterRequest,
 ) (string, error) {
-	logger.Log.Info("user",
-		zap.String("user.Login", user.Login),
-		zap.String("user.Password", user.Password),
-	)
 	err := us.validator.ValidateStruct(user)
 	if err != nil {
 		return "", err
