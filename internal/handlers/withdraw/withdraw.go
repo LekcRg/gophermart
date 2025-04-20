@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/LekcRg/gophermart/internal/errs"
 	"github.com/LekcRg/gophermart/internal/httputils"
 	"github.com/LekcRg/gophermart/internal/logger"
 	"github.com/LekcRg/gophermart/internal/models"
-	"github.com/LekcRg/gophermart/internal/repository"
 	"github.com/LekcRg/gophermart/internal/service/withdraw"
 	"github.com/LekcRg/gophermart/internal/validator"
 	"go.uber.org/zap"
@@ -27,7 +27,7 @@ func New(withdrawService *withdraw.WithdrawService, validator *validator.Validat
 	}
 }
 
-func (wh *WithdrawHandler) CheckCreateWithdrawErrors(
+func (wh *WithdrawHandler) CheckWithdrawErrors(
 	w http.ResponseWriter, err error, lang string,
 ) {
 
@@ -42,7 +42,7 @@ func (wh *WithdrawHandler) CheckCreateWithdrawErrors(
 
 		httputils.ErrMapJSON(w, validErrs, http.StatusBadRequest)
 		return
-	} else if err == repository.ErrUserSmallBalance {
+	} else if err == errs.ErrUserSmallBalance {
 		logger.Log.Info("Small balance err")
 		httputils.ErrJSON(w, "small balance", http.StatusPaymentRequired)
 		return
@@ -66,7 +66,7 @@ func (wh *WithdrawHandler) CheckCreateWithdrawErrors(
 // @Failure      500 {object} httputils.ErrorJSON "Internal server error"
 // @Router       /api/user/balance/withdraw [post]
 // @Security     BearerAuth
-func (wh *WithdrawHandler) CreateWithdraw(w http.ResponseWriter, r *http.Request) {
+func (wh *WithdrawHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 	if !strings.Contains(r.Header.Get("Content-Type"), "application/json") {
 		httputils.ErrJSON(w, "Incorrect Content-Type", http.StatusBadRequest)
 		return
@@ -78,10 +78,10 @@ func (wh *WithdrawHandler) CreateWithdraw(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err := wh.service.CreateWithdraw(r.Context(), withdraw)
+	err := wh.service.Withdraw(r.Context(), withdraw)
 	lang := r.Header.Get("Accept-Language")
 	if err != nil {
-		wh.CheckCreateWithdrawErrors(w, err, lang)
+		wh.CheckWithdrawErrors(w, err, lang)
 		return
 	}
 

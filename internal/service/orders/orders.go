@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/LekcRg/gophermart/internal/config"
-	"github.com/LekcRg/gophermart/internal/crypto"
+	"github.com/LekcRg/gophermart/internal/jwt"
 	"github.com/LekcRg/gophermart/internal/logger"
 	"github.com/LekcRg/gophermart/internal/models"
 	"github.com/LekcRg/gophermart/internal/repository"
@@ -41,7 +41,7 @@ func New(
 func (os *OrdersService) GetOrders(
 	ctx context.Context,
 ) ([]models.OrderDB, error) {
-	user, err := crypto.GetUserFromCtx(ctx)
+	user, err := jwt.GetUserFromCtx(ctx)
 	if err != nil {
 		logger.Log.Error("error while getting user data from context")
 		return []models.OrderDB{}, err
@@ -97,7 +97,7 @@ func (os *OrdersService) UploadOrder(
 		return err
 	}
 
-	user, err := crypto.GetUserFromCtx(ctx)
+	user, err := jwt.GetUserFromCtx(ctx)
 	if err != nil {
 		logger.Log.Error("error while getting user data from context")
 		return err

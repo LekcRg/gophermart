@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/LekcRg/gophermart/internal/config"
-	"github.com/LekcRg/gophermart/internal/crypto"
+	"github.com/LekcRg/gophermart/internal/jwt"
 	"github.com/LekcRg/gophermart/internal/models"
 	"github.com/LekcRg/gophermart/internal/repository"
 	"github.com/LekcRg/gophermart/internal/validator"
@@ -40,7 +40,7 @@ func (us *UserService) Login(
 		return "", err
 	}
 
-	return crypto.BuildJWTString(dbUser.ID, us.config.JWTExp, dbUser.Login, us.config.JWTSecret)
+	return jwt.BuildJWTString(dbUser.ID, us.config.JWTExp, dbUser.Login, us.config.JWTSecret)
 }
 
 func (us *UserService) Register(
@@ -63,11 +63,11 @@ func (us *UserService) Register(
 		return "", err
 	}
 
-	return crypto.BuildJWTString(dbUser.ID, us.config.JWTExp, dbUser.Login, us.config.JWTSecret)
+	return jwt.BuildJWTString(dbUser.ID, us.config.JWTExp, dbUser.Login, us.config.JWTSecret)
 }
 
 func (us *UserService) Balance(ctx context.Context) (models.UserBalance, error) {
-	user, err := crypto.GetUserFromCtx(ctx)
+	user, err := jwt.GetUserFromCtx(ctx)
 	if err != nil {
 		return models.UserBalance{}, err
 	}

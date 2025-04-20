@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/LekcRg/gophermart/internal/config"
-	"github.com/LekcRg/gophermart/internal/crypto"
 	"github.com/LekcRg/gophermart/internal/httputils"
+	"github.com/LekcRg/gophermart/internal/jwt"
 	"github.com/LekcRg/gophermart/internal/logger"
 	"github.com/LekcRg/gophermart/internal/models"
 	"github.com/LekcRg/gophermart/internal/validator"
@@ -48,7 +48,7 @@ func New(cfg config.Config, us UserService, validator *validator.Validator) *Use
 // @Router       /api/user/info [get]
 // @Security     BearerAuth
 func (uh *UserHandler) Info(w http.ResponseWriter, r *http.Request) {
-	user, err := crypto.GetUserFromCtx(r.Context())
+	user, err := jwt.GetUserFromCtx(r.Context())
 	if err != nil {
 		logger.Log.Error("error while getting user data from context")
 		httputils.ErrJSON(w, "Unauthorized", http.StatusUnauthorized)

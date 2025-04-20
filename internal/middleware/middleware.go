@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/LekcRg/gophermart/internal/crypto"
 	"github.com/LekcRg/gophermart/internal/httputils"
+	"github.com/LekcRg/gophermart/internal/jwt"
 	"github.com/LekcRg/gophermart/internal/logger"
 	"github.com/LekcRg/gophermart/internal/models"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
@@ -74,7 +74,7 @@ func Auth(secret string) func(http.Handler) http.Handler {
 				return
 			}
 
-			claim, err := crypto.GetUserClaims(token, secret)
+			claim, err := jwt.GetUserClaims(token, secret)
 			if err != nil {
 				logger.Log.Info("[auth middleware]: error parse jwt token",
 					zap.Error(err))
@@ -87,7 +87,7 @@ func Auth(secret string) func(http.Handler) http.Handler {
 				zap.Int("id", claim.ID),
 			)
 
-			ctx := context.WithValue(r.Context(), crypto.UserContextKey, models.DBUser{
+			ctx := context.WithValue(r.Context(), jwt.UserContextKey, models.DBUser{
 				Login: claim.Login,
 				ID:    claim.ID,
 			})

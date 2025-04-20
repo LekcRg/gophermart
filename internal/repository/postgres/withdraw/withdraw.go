@@ -40,8 +40,6 @@ func (wp *WithdrawPostgres) CreateWithdraw(ctx context.Context, userLogin string
 		return err
 	}
 
-	// TODO: ошибки заказа, что его нету и т.п.
-
 	return nil
 }
 

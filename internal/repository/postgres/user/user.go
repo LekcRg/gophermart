@@ -7,7 +7,6 @@ import (
 	"github.com/LekcRg/gophermart/internal/errs"
 	"github.com/LekcRg/gophermart/internal/logger"
 	"github.com/LekcRg/gophermart/internal/models"
-	"github.com/LekcRg/gophermart/internal/repository"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
@@ -113,7 +112,7 @@ func (up *UserPostgres) WithdrawBalance(
 	var newBalance sql.NullFloat64
 	err := row.Scan(&newBalance)
 	if err != nil && err == pgx.ErrNoRows {
-		return repository.ErrUserSmallBalance
+		return errs.ErrUserSmallBalance
 	} else if err != nil {
 		return err
 	}

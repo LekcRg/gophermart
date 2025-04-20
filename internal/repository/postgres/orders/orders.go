@@ -3,10 +3,10 @@ package orders
 import (
 	"context"
 
+	"github.com/LekcRg/gophermart/internal/errs"
 	"github.com/LekcRg/gophermart/internal/logger"
 	"github.com/LekcRg/gophermart/internal/models"
 	"github.com/LekcRg/gophermart/internal/pgutils"
-	"github.com/LekcRg/gophermart/internal/repository"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
@@ -16,7 +16,6 @@ type OrdersPostgres struct {
 }
 
 func New(ctx context.Context, db *pgxpool.Pool) *OrdersPostgres {
-	// create orders table
 	query := `DO $$
 	BEGIN
 		CREATE TYPE order_status AS ENUM ( 'NEW',
@@ -127,10 +126,10 @@ func (op *OrdersPostgres) Create(
 		}
 
 		if oldOrder.UserLogin == user.Login {
-			return repository.ErrOrdersRegisteredThisUser
+			return errs.ErrOrdersRegisteredThisUser
 		}
 
-		return repository.ErrOrdersRegisteredOtherUser
+		return errs.ErrOrdersRegisteredOtherUser
 	} else if err != nil {
 		return err
 	}

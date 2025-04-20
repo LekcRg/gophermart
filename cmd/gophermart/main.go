@@ -32,7 +32,7 @@ import (
 // @in header
 // @name Authorization
 
-func exit(
+func handleGracefulShutdown(
 	cancel context.CancelFunc, server *http.Server,
 	db repository.RepositoryProvider,
 ) {
@@ -46,16 +46,20 @@ func exit(
 	db.Close()
 
 	logger.Log.Info("stopping server")
-	ctx, toCancel := context.WithTimeout(context.Background(), time.Duration(time.Second*5))
+	ctx, toCancel := context.WithTimeout(context.Background(), time.Duration(5*time.Second))
 	err := server.Shutdown(ctx)
 	if err != nil {
 		logger.Log.Error("error while shutdown server", zap.Error(err))
+	}
+
+	err = logger.Log.Sync()
+	if err != nil {
+		logger.Log.Error("Log.Sync error", zap.Error(err))
 	}
 	toCancel()
 }
 
 func main() {
-	// request.Post()
 	cfg := config.Get()
 	logger.Initialize(cfg)
 
@@ -72,7 +76,7 @@ func main() {
 		Addr:    cfg.Address,
 		Handler: routes,
 	}
-	go exit(cancel, server, dbProvider)
+	go handleGracefulShutdown(cancel, server, dbProvider)
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		logger.Log.Error(err.Error())
 	}

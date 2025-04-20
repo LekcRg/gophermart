@@ -3,7 +3,7 @@ package withdraw
 import (
 	"context"
 
-	"github.com/LekcRg/gophermart/internal/crypto"
+	"github.com/LekcRg/gophermart/internal/jwt"
 	"github.com/LekcRg/gophermart/internal/models"
 	"github.com/LekcRg/gophermart/internal/repository"
 	"github.com/LekcRg/gophermart/internal/validator"
@@ -28,7 +28,7 @@ func New(
 	}
 }
 
-func (ws *WithdrawService) CreateWithdraw(
+func (ws *WithdrawService) Withdraw(
 	ctx context.Context, withdraw models.WithdrawRequest,
 ) error {
 	errs := ws.validator.ValidateStruct(withdraw)
@@ -36,7 +36,7 @@ func (ws *WithdrawService) CreateWithdraw(
 		return errs
 	}
 
-	user, err := crypto.GetUserFromCtx(ctx)
+	user, err := jwt.GetUserFromCtx(ctx)
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func (ws *WithdrawService) CreateWithdraw(
 }
 
 func (ws *WithdrawService) GetWithdrawals(ctx context.Context) (models.WithdrawList, error) {
-	user, err := crypto.GetUserFromCtx(ctx)
+	user, err := jwt.GetUserFromCtx(ctx)
 	if err != nil {
 		return models.WithdrawList{}, err
 	}

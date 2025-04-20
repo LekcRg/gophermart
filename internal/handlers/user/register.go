@@ -20,8 +20,7 @@ func (uh *UserHandler) checkRegisterErrors(
 	if pgutils.IsNotUnique(err) {
 		trErr, err := translations.GetErr(translations.ErrAlreadyExists, "login", lang)
 		if err != nil {
-			logger.Log.Error("Error getting translate err",
-				zap.Error(err))
+			logger.Log.Error("Error getting translate err", zap.Error(err))
 			trErr = "already exists"
 		}
 		logger.Log.Info(logContext + "No unique user")
@@ -64,7 +63,7 @@ func (uh *UserHandler) Register(
 	if err := json.NewDecoder(r.Body).Decode(&authUser); err != nil {
 		logger.Log.Error(logContext+"invalid JSON",
 			zap.Error(err))
-		httputils.ErrJSON(w, "invalid JSON", http.StatusInternalServerError)
+		httputils.ErrJSON(w, "invalid JSON", http.StatusBadRequest)
 		return
 	}
 	defer r.Body.Close()
@@ -77,7 +76,6 @@ func (uh *UserHandler) Register(
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	msgStruct := models.AuthResponse{
 		Token: token,
 	}
