@@ -1,39 +1,36 @@
-package request
+package accrual
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
+	"github.com/LekcRg/gophermart/internal/errs"
 	"github.com/LekcRg/gophermart/internal/logger"
 	"github.com/LekcRg/gophermart/internal/models"
 	"go.uber.org/zap"
 	"resty.dev/v3"
 )
 
-type Request struct {
+type Accrual struct {
+	client      *resty.Client
 	accrualAddr string
 }
 
-func New(accrualAddr string) *Request {
+func New(accrualAddr string) *Accrual {
 
-	return &Request{
+	return &Accrual{
+		client:      resty.New(),
 		accrualAddr: accrualAddr,
 	}
 }
 
-var ErrNotRegisteredOrder = fmt.Errorf("заказ не зарегистрирован в системе расчёта")
-
-func (r *Request) GetAccrual(orderNum string) (models.AccrualRes, error) {
-	client := resty.New()
-	defer client.Close()
-
-	res, err := client.R().
-		Get(r.accrualAddr + "/api/orders/" + orderNum)
+func (a *Accrual) GetAccrual(orderNum string) (models.AccrualRes, error) {
+	res, err := a.client.R().
+		Get(a.accrualAddr + "/api/orders/" + orderNum)
 	if err != nil {
 		if res.StatusCode() == http.StatusNoContent {
 			logger.Log.Info("Get accrual no content")
-			return models.AccrualRes{}, ErrNotRegisteredOrder
+			return models.AccrualRes{}, errs.ErrAccrualReqNotRegisteredOrder
 		}
 		logger.Log.Error("Get accrual err",
 			zap.Error(err))
@@ -48,4 +45,8 @@ func (r *Request) GetAccrual(orderNum string) (models.AccrualRes, error) {
 	}
 
 	return resStruct, nil
+}
+
+func (a *Accrual) Close() {
+	a.client.Close()
 }

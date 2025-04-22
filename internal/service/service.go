@@ -1,9 +1,11 @@
 package service
 
 import (
+	"context"
+
+	"github.com/LekcRg/gophermart/internal/accrual"
 	"github.com/LekcRg/gophermart/internal/config"
 	"github.com/LekcRg/gophermart/internal/repository"
-	"github.com/LekcRg/gophermart/internal/request"
 	"github.com/LekcRg/gophermart/internal/service/orders"
 	"github.com/LekcRg/gophermart/internal/service/user"
 	"github.com/LekcRg/gophermart/internal/service/withdraw"
@@ -17,12 +19,13 @@ type Service struct {
 }
 
 func New(
+	ctx context.Context,
 	db *repository.Repository, validator *validator.Validator,
-	cfg config.Config, req *request.Request,
+	cfg config.Config, req *accrual.Accrual,
 ) *Service {
 	return &Service{
 		User:     *user.New(db.User, validator, cfg),
-		Orders:   *orders.New(db.Orders, validator, cfg, req, db.User),
+		Orders:   *orders.New(ctx, db.Orders, validator, cfg, req, db.User),
 		Withdraw: *withdraw.New(db.Withdraw, db.User, validator),
 	}
 }

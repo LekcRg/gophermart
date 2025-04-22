@@ -9,12 +9,12 @@ import (
 	"time"
 
 	_ "github.com/LekcRg/gophermart/docs"
+	"github.com/LekcRg/gophermart/internal/accrual"
 	"github.com/LekcRg/gophermart/internal/config"
 	"github.com/LekcRg/gophermart/internal/handlers"
 	"github.com/LekcRg/gophermart/internal/logger"
 	"github.com/LekcRg/gophermart/internal/repository"
 	"github.com/LekcRg/gophermart/internal/repository/postgres"
-	"github.com/LekcRg/gophermart/internal/request"
 	"github.com/LekcRg/gophermart/internal/router"
 	"github.com/LekcRg/gophermart/internal/service"
 	"github.com/LekcRg/gophermart/internal/validator"
@@ -34,7 +34,7 @@ import (
 
 func handleGracefulShutdown(
 	cancel context.CancelFunc, server *http.Server,
-	db repository.RepositoryProvider,
+	db repository.RepositoryProvider, acr *accrual.Accrual,
 ) {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
@@ -56,6 +56,8 @@ func handleGracefulShutdown(
 	if err != nil {
 		logger.Log.Error("Log.Sync error", zap.Error(err))
 	}
+
+	acr.Close()
 	toCancel()
 }
 
@@ -67,8 +69,8 @@ func main() {
 	dbProvider := postgres.New(ctx, cfg)
 	valid := validator.New()
 	repos := dbProvider.GetRepositories()
-	req := request.New(cfg.AccrualAddress)
-	services := service.New(repos, valid, cfg, req)
+	req := accrual.New(cfg.AccrualAddress)
+	services := service.New(ctx, repos, valid, cfg, req)
 	handlers := handlers.New(cfg, services, valid)
 	routes := router.New(handlers, cfg.JWTSecret)
 
@@ -76,7 +78,7 @@ func main() {
 		Addr:    cfg.Address,
 		Handler: routes,
 	}
-	go handleGracefulShutdown(cancel, server, dbProvider)
+	go handleGracefulShutdown(cancel, server, dbProvider, req)
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		logger.Log.Error(err.Error())
 	}
