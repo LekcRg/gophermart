@@ -28,9 +28,9 @@ func New(ctx context.Context, cfg config.Config) *Postgres {
 	return &Postgres{
 		db: conn,
 		repos: &repository.Repository{
-			User:     user.New(ctx, conn),
-			Orders:   orders.New(ctx, conn),
-			Withdraw: withdraw.New(ctx, conn),
+			User:     user.New(conn),
+			Orders:   orders.New(conn),
+			Withdraw: withdraw.New(conn),
 		},
 	}
 }

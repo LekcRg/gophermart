@@ -4,48 +4,16 @@ import (
 	"context"
 
 	"github.com/LekcRg/gophermart/internal/errs"
-	"github.com/LekcRg/gophermart/internal/logger"
 	"github.com/LekcRg/gophermart/internal/models"
 	"github.com/LekcRg/gophermart/internal/pgutils"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"go.uber.org/zap"
 )
 
 type OrdersPostgres struct {
 	db *pgxpool.Pool
 }
 
-func New(ctx context.Context, db *pgxpool.Pool) *OrdersPostgres {
-	query := `DO $$
-	BEGIN
-		CREATE TYPE order_status AS ENUM ( 'NEW',
-			'PROCESSING',
-			'INVALID',
-			'PROCESSED'
-	);
-	EXCEPTION
-	WHEN duplicate_object THEN
-		NULL;
-	END
-	$$;
-
-	CREATE TABLE IF NOT EXISTS orders (
-		id serial NOT NULL PRIMARY KEY,
-		order_id varchar(50) NOT NULL UNIQUE,
-		status order_status NOT NULL,
-		accrual double precision,
-		uploaded_at TIMESTAMP NOT NULL DEFAULT now(),
-		updated_at TIMESTAMP NOT NULL DEFAULT now(),
-		user_login varchar(30) NOT NULL REFERENCES users (LOGIN)
-	);
-`
-
-	_, err := db.Exec(ctx, query)
-	if err != nil {
-		logger.Log.Error("Error while create orders table",
-			zap.Error(err))
-	}
-
+func New(db *pgxpool.Pool) *OrdersPostgres {
 	return &OrdersPostgres{
 		db: db,
 	}

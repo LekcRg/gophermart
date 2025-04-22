@@ -3,30 +3,15 @@ package withdraw
 import (
 	"context"
 
-	"github.com/LekcRg/gophermart/internal/logger"
 	"github.com/LekcRg/gophermart/internal/models"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"go.uber.org/zap"
 )
 
 type WithdrawPostgres struct {
 	db *pgxpool.Pool
 }
 
-func New(ctx context.Context, db *pgxpool.Pool) *WithdrawPostgres {
-	query := `CREATE TABLE IF NOT EXISTS withdraw (
-		id SERIAL PRIMARY KEY,
-		order_id varchar(50) NOT NULL,
-		sum DOUBLE PRECISION DEFAULT 0,
-		user_login varchar(30) NOT NULL REFERENCES users (login),
-		processed_at TIMESTAMP NOT NULL DEFAULT now()
-	)`
-	_, err := db.Exec(ctx, query)
-	if err != nil {
-		logger.Log.Error("create withdraw table error",
-			zap.Error(err))
-	}
-
+func New(db *pgxpool.Pool) *WithdrawPostgres {
 	return &WithdrawPostgres{
 		db: db,
 	}
