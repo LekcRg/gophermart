@@ -1,0 +1,298 @@
+basePath: /
+definitions:
+  httputils.ErrorJSON:
+    properties:
+      error:
+        type: string
+    type: object
+  models.AuthResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  models.DBUser:
+    properties:
+      id:
+        type: integer
+      login:
+        type: string
+    type: object
+  models.LoginRequest:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  models.RegisterRequest:
+    properties:
+      login:
+        type: string
+      password:
+        maxLength: 40
+        minLength: 8
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  models.UserBalance:
+    properties:
+      current:
+        type: number
+      withdrawn:
+        type: number
+    type: object
+  models.Withdraw:
+    properties:
+      order:
+        type: string
+      processed_at:
+        type: string
+      sum:
+        type: number
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Gophermart cumulative loyalty system
+  title: Gophermart API
+  version: "1.0"
+paths:
+  /api/user/balance:
+    get:
+      description: Информация о балансе пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User info
+          schema:
+            $ref: '#/definitions/models.UserBalance'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+      security:
+      - BearerAuth: []
+      summary: Информация о балансе пользователя
+      tags:
+      - Balance
+  /api/user/balance/withdraw:
+    post:
+      consumes:
+      - application/json
+      description: Запрос на списание средств
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешно
+        "400":
+          description: Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+        "402":
+          description: На счету недостаточно средств
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+      security:
+      - BearerAuth: []
+      summary: Запрос на списание средств
+      tags:
+      - Balance
+  /api/user/info:
+    get:
+      consumes:
+      - application/json
+      description: Информация о пользователе возвращается id и логин
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User info
+          schema:
+            $ref: '#/definitions/models.DBUser'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+      security:
+      - BearerAuth: []
+      summary: Информация о пользователе
+      tags:
+      - Auth
+  /api/user/login:
+    post:
+      consumes:
+      - application/json
+      description: Авторизация по email и паролю, возвращает JWT токен при успешной
+        аутентификации
+      parameters:
+      - description: Данные для входа
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AuthResponse'
+        "400":
+          description: Неверные данные
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+        "401":
+          description: Неверный email или пароль
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+      summary: Авторизация пользователя
+      tags:
+      - Auth
+  /api/user/orders:
+    get:
+      description: Загрузка заказов пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Номер заказа уже был загружен этим пользователем
+        "204":
+          description: нет данных для ответа
+        "500":
+          description: Внутренняя ошибка сервера
+      security:
+      - BearerAuth: []
+      summary: Загрузка заказов пользователя
+      tags:
+      - Orders
+    post:
+      consumes:
+      - text/plain
+      description: Загрузка заказов пользователя
+      parameters:
+      - description: Номер заказа
+        in: body
+        name: order-num
+        required: true
+        schema:
+          type: integer
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Номер заказа уже был загружен этим пользователем
+        "202":
+          description: Новый номер заказа принят в обработку
+        "400":
+          description: Неверный формат запроса
+        "401":
+          description: Пользователь не аутентифицирован
+        "409":
+          description: Номер заказа уже был загружен другим пользователем
+        "422":
+          description: Неверный формат номера заказа
+        "500":
+          description: Внутренняя ошибка сервера
+      security:
+      - BearerAuth: []
+      summary: Загрузка номера заказа
+      tags:
+      - Orders
+  /api/user/register:
+    post:
+      consumes:
+      - application/json
+      description: Регистрирует нового пользователя и возвращает JWT токен при успешной
+        регистрации
+      parameters:
+      - description: Данные для регистрации
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AuthResponse'
+        "400":
+          description: Неверные данные
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+        "409":
+          description: Пользователь с таким логином уже существует
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+      summary: Регистрация пользователя
+      tags:
+      - Auth
+  /api/user/withdrawals:
+    get:
+      description: Получение информации о выводе средств
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешно
+          schema:
+            items:
+              $ref: '#/definitions/models.Withdraw'
+            type: array
+        "204":
+          description: нет ни одного списания
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httputils.ErrorJSON'
+      security:
+      - BearerAuth: []
+      summary: Получение информации о выводе средств
+      tags:
+      - Balance
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

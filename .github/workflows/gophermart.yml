@@ -12,7 +12,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    container: golang:1.23
+    container: golang:1.24.2
 
     services:
       postgres:
@@ -49,6 +49,14 @@ jobs:
         run: |
           (cd cmd/gophermart && go build -buildvcs=false -o gophermart)
           (cd cmd/accrual && chmod +x accrual_linux_amd64)
+
+      - name: Install goose
+        run: |
+          go install github.com/pressly/goose/v3/cmd/goose@latest
+
+      - name: Prepare db (migrations)
+        run: |
+          goose postgres "postgresql://postgres:postgres@postgres/praktikum?sslmode=disable" -dir=./migrations up
 
       - name: Test
         run: |

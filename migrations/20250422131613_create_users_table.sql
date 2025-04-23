@@ -1,0 +1,11 @@
+-- +goose Up
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  LOGIN VARCHAR(30) UNIQUE NOT NULL,
+  balance DOUBLE PRECISION NOT NULL DEFAULT 0,
+  withdrawn DOUBLE PRECISION NOT NULL DEFAULT 0,
+  passhash varchar(72) NOT NULL
+);
+
+-- +goose Down
+DROP TABLE users;
