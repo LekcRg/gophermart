@@ -4,13 +4,13 @@ services:
     build:
       dockerfile: ./Dockerfile.gophermart
     ports:
-      - 8080:8080
+      - 80:8080
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     env_file:
-      - .env
+      - .env.docker
   accrual:
     build:
       dockerfile: ./Dockerfile.accrual
@@ -19,7 +19,7 @@ services:
     ports:
       - 8888:8888
     env_file:
-      - .env
+      - .env.docker
   postgres:
     container_name: gophermart-db
     image: postgres:17-alpine
@@ -35,6 +35,6 @@ services:
       start_period: 2s
       retries: 5
     env_file:
-      - .env
+      - .env.docker
 volumes:
   db:

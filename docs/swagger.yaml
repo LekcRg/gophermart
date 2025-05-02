@@ -55,7 +55,6 @@ definitions:
       sum:
         type: number
     type: object
-host: localhost:8080
 info:
   contact: {}
   description: Gophermart cumulative loyalty system

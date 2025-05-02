@@ -25,7 +25,6 @@ import (
 // @version 1.0
 // @description Gophermart cumulative loyalty system
 
-// @host localhost:8080
 // @BasePath /
 
 // @securityDefinitions.apikey BearerAuth

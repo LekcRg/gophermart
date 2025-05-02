@@ -23,4 +23,5 @@ vendor/
 .vscode
 
 .env
+.env.docker
 tmp
