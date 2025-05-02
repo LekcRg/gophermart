@@ -1,0 +1,7 @@
+Dockerfile.accrual
+Dockerfile.gophermart
+docker-compose.yml
+.env*
+.git
+.gitignore
+*.md

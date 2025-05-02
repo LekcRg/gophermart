@@ -1,0 +1,27 @@
+FROM golang:1.24.2-alpine AS builder
+WORKDIR /app
+
+COPY go.mod /app/
+COPY go.sum /app/
+RUN go mod download
+
+COPY . /app/
+RUN cd /app/cmd/gophermart && go build -buildvcs=false -o gophermart
+
+FROM alpine:latest AS runner
+WORKDIR /gophermart
+
+RUN apk add --no-cache libc6-compat curl
+RUN curl -fsSL \
+  https://raw.githubusercontent.com/pressly/goose/master/install.sh |\
+  sh
+
+COPY --from=builder /app/cmd/gophermart/gophermart .
+COPY migrations ./migrations
+COPY entrypoint.sh .
+
+RUN chmod +x ./gophermart ./entrypoint.sh 
+
+EXPOSE 8080
+
+ENTRYPOINT ["./entrypoint.sh"]

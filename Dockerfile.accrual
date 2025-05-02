@@ -1,0 +1,5 @@
+FROM alpine:latest
+WORKDIR /accrual
+COPY cmd/accrual/accrual_linux_amd64 .
+RUN apk add --no-cache libc6-compat
+CMD ["./accrual_linux_amd64", "-a", ":8888"]

@@ -1,4 +1,25 @@
 services:
+  gophermart:
+    container_name: gophermart-backend
+    build:
+      dockerfile: ./Dockerfile.gophermart
+    ports:
+      - 8080:8080
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+  accrual:
+    build:
+      dockerfile: ./Dockerfile.accrual
+    container_name: gophermart-accrual
+    restart: unless-stopped
+    ports:
+      - 8888:8888
+    env_file:
+      - .env
   postgres:
     container_name: gophermart-db
     image: postgres:17-alpine
@@ -6,9 +27,14 @@ services:
       - 5432:5432
     volumes:
       - db:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_PASSWORD
-      - POSTGRES_USER
-      - POSTGRES_DB
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", $POSTGRES_USER, "-d", $POSTGRES_DB]
+      interval: 10s
+      timeout: 5s
+      start_period: 2s
+      retries: 5
+    env_file:
+      - .env
 volumes:
   db:
