@@ -2,14 +2,19 @@ name: docker build
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: [build, statictest]
+  push:
     branches:
       - main
       - master
       - docker
-    types:
-      - completed
+  # workflow_run:
+  #   workflows: [build, statictest]
+  #   branches:
+  #     - main
+  #     - master
+  #     - docker
+  #   types:
+  #     - completed
 
 jobs:
   docker-deploy:
