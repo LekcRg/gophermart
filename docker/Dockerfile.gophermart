@@ -18,7 +18,7 @@ RUN curl -fsSL \
 
 COPY --from=builder /app/cmd/gophermart/gophermart .
 COPY migrations ./migrations
-COPY entrypoint.sh .
+COPY docker/entrypoint.sh .
 
 RUN chmod +x ./gophermart ./entrypoint.sh 
 
