@@ -13,7 +13,5 @@ services:
       timeout: 5s
       start_period: 2s
       retries: 5
-    env_file:
-      - .env.docker
 volumes:
   db:

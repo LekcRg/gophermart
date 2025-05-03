@@ -8,13 +8,9 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    env_file:
-      - .env.docker
   accrual:
     image: ghcr.io/lekcrg/gophermart-accrual:latest
     container_name: gophermart-accrual
     restart: unless-stopped
     ports:
       - 8888:8888
-    env_file:
-      - .env.docker
