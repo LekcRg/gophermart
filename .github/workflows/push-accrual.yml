@@ -3,7 +3,7 @@ name: push accrual
 on: workflow_dispatch
 
 jobs:
-  docker-deploy:
+  push-accrual:
     runs-on: ubuntu-latest
     permissions:
       contents: read
