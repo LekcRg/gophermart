@@ -1,4 +1,4 @@
-name: docker build
+name: push accrual
 
 on: workflow_dispatch
 
