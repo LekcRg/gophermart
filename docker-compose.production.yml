@@ -1,8 +1,7 @@
 services:
   gophermart:
+    image: ghcr.io/lekcrg/gophermart:latest
     container_name: gophermart-backend
-    build:
-      dockerfile: ./docker/Dockerfile.gophermart
     ports:
       - 80:8080
     restart: unless-stopped
@@ -12,8 +11,7 @@ services:
     env_file:
       - .env.docker
   accrual:
-    build:
-      dockerfile: ./docker/Dockerfile.accrual
+    image: ghcr.io/lekcrg/gophermart-accrual:latest
     container_name: gophermart-accrual
     restart: unless-stopped
     ports:
