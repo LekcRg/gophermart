@@ -35,7 +35,7 @@ jobs:
           file: ./docker/Dockerfile.gophermart
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/LekcRg/gophermart:latest
+          tags: ghcr.io/lekcrg/gophermart:latest
       - name: Copy files via SSH
         uses: appleboy/scp-action@v1
         with:
