@@ -2,6 +2,7 @@ Dockerfile.accrual
 Dockerfile.gophermart
 docker-compose.yml
 Dockerfile*
+.github
 .env*
 .git
 .gitignore
